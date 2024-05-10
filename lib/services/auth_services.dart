@@ -5,16 +5,15 @@ import 'package:http/http.dart' as http;
 
 class AuthService extends ChangeNotifier {
   // Solicitudes HTTP
-  final String _baseUrl = 'http://www.jwtingesoria.somee.com';
+  final String _baseUrl = 'https://proyecto-agiles.onrender.com';
   final storage = FlutterSecureStorage();
 
-  Future<String?> createUser(String email, String password) async {
-    final authData = {
-      'email': email,
-      'password': password,
-    };
+  //login alumnos
 
-    final url = Uri.parse('$_baseUrl/api/Cuentas/registrar');
+  Future<String?> login_alumnos(String numeroControl, String password) async {
+    final authData = {'numeroControl': numeroControl, 'password': password};
+
+    final url = Uri.parse('$_baseUrl/login/alumno');
 
     try {
       final resp = await http.post(
@@ -43,13 +42,10 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<String?> login(String email, String password) async {
-    final authData = {
-      'email': email,
-      'password': password,
-    };
+  Future<String?> login_maestros(String rfc, String password) async {
+    final authData = {'rfc': rfc, 'password': password};
 
-    final url = Uri.parse('$_baseUrl/api/Cuentas/Login');
+    final url = Uri.parse('$_baseUrl/login/alumnos');
 
     try {
       final resp = await http.post(
