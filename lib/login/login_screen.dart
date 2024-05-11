@@ -13,32 +13,41 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+//saber si es alumno o maestro segun rfc o nc ingresado
   Future<void> _login() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     try {
-      if (_idController.text.contains('A')) {
+      final id = _idController.text;
+      if (id.length == 8 && int.tryParse(id) != null) {
+        // Si el ID tiene 8 caracteres y es un número, asumimos que es un número de control (alumno)
         await authProvider.autenticarAlumno(
-          _idController.text,
+          id,
           _passwordController.text,
         );
       } else {
+        // Si no, lo tratamos como RFC (maestro)
         await authProvider.autenticarMaestro(
-          _idController.text,
+          id,
           _passwordController.text,
         );
       }
 
       // Redirigir según el rol
-      if (authProvider.role == 'alumno') {
+      final role = authProvider.role;
+      if (role == 'alumno') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DesconectadoScreen()),
         );
-      } else if (authProvider.role == 'maestro') {
+      } else if (role == 'maestro') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MateriasScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: Rol desconocido')),
         );
       }
     } catch (e) {
