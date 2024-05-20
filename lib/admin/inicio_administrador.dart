@@ -186,6 +186,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
     );
   }
 }
+
 class CrearMaestro extends StatefulWidget {
   @override
   _CrearMaestroState createState() => _CrearMaestroState();
@@ -196,20 +197,17 @@ class _CrearMaestroState extends State<CrearMaestro> {
   final TextEditingController nombreController = TextEditingController();
   final TextEditingController departamentoIdController =
       TextEditingController();
-  final TextEditingController roleIdController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
 
   void _crearMaestro() async {
     String rfc = rfcController.text.trim();
     String nombre = nombreController.text.trim();
     String departamentoId = departamentoIdController.text.trim();
-    String roleId = roleIdController.text.trim();
     String contrasena = contrasenaController.text.trim();
 
     if (rfc.isEmpty ||
         nombre.isEmpty ||
         departamentoId.isEmpty ||
-        roleId.isEmpty ||
         contrasena.isEmpty) {
       _showDialog('Por favor, completa todos los campos.');
       return;
@@ -219,7 +217,7 @@ class _CrearMaestroState extends State<CrearMaestro> {
       "rfc": rfc,
       "nombre": nombre,
       "departamentoId": int.parse(departamentoId),
-      "roleId": int.parse(roleId),
+      "roleId": 2,
       "contraseña": contrasena,
     };
 
@@ -238,7 +236,6 @@ class _CrearMaestroState extends State<CrearMaestro> {
     rfcController.clear();
     nombreController.clear();
     departamentoIdController.clear();
-    roleIdController.clear();
     contrasenaController.clear();
   }
 
@@ -292,14 +289,14 @@ class _CrearMaestroState extends State<CrearMaestro> {
               keyboardType: TextInputType.number,
             ),
             TextField(
-              controller: roleIdController,
-              decoration: InputDecoration(labelText: 'Role ID'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
               controller: contrasenaController,
               decoration: InputDecoration(labelText: 'Contraseña'),
               obscureText: true,
+            ),
+            TextField(
+              controller: TextEditingController(text: '2'),
+              decoration: InputDecoration(labelText: 'Role ID'),
+              enabled: false,
             ),
             SizedBox(height: 20),
             ElevatedButton(
