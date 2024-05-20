@@ -80,7 +80,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
     };
 
     var response = await http.post(
-      Uri.parse('https://proyecto-agiles.onrender.com/login/crear/alumnos'),
+      Uri.parse('https://proyecto-agiles.onrender.com/login/crear/alumno'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(alumno),
     );
@@ -196,7 +196,7 @@ class _CrearMaestroState extends State<CrearMaestro> {
     };
 
     var response = await http.post(
-      Uri.parse('https://proyecto-agiles.onrender.com/login/crear/maestros'),
+      Uri.parse('https://proyecto-agiles.onrender.com/login/crear/maestro'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(maestro),
     );
