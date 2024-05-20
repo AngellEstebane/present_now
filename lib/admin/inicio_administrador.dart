@@ -64,20 +64,39 @@ class _CrearAlumnoState extends State<CrearAlumno> {
   final TextEditingController roleIdController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    roleIdController.text = '1';
+  }
+
   void _crearAlumno() async {
-    String numeroControl = numeroControlController.text;
-    String nombre = nombreController.text;
-    String carrera = carreraController.text;
-    String roleId = roleIdController.text;
-    String contrasena = contrasenaController.text;
+    String numeroControl = numeroControlController.text.trim();
+    String nombre = nombreController.text.trim();
+    String carrera = carreraController.text.trim();
+    String contrasena = contrasenaController.text.trim();
+
+    if (numeroControl.isEmpty ||
+        nombre.isEmpty ||
+        carrera.isEmpty ||
+        contrasena.isEmpty ||
+        roleIdController.text.isEmpty) {
+      _showDialog('Por favor, completa todos los campos.');
+      return;
+    }
 
     var alumno = {
-      "NumeroControl": numeroControl,
-      "Nombre": nombre,
-      "Carrera": carrera,
-      "RoleID": int.parse(roleId),
-      "Contraseña": contrasena,
+      "numeroControl": numeroControl,
+      "nombre": nombre,
+      "carrera": carrera,
+      "roleId": int.tryParse(roleIdController.text) ?? -1,
+      "contraseña": contrasena,
     };
+
+    if (alumno['roleId'] == -1) {
+      _showDialog('Por favor, ingresa un valor válido para roleId.');
+      return;
+    }
 
     var response = await http.post(
       Uri.parse('https://proyecto-agiles.onrender.com/login/crear/alumno'),
@@ -94,7 +113,6 @@ class _CrearAlumnoState extends State<CrearAlumno> {
     numeroControlController.clear();
     nombreController.clear();
     carreraController.clear();
-    roleIdController.clear();
     contrasenaController.clear();
   }
 
@@ -149,6 +167,8 @@ class _CrearAlumnoState extends State<CrearAlumno> {
             TextField(
               controller: roleIdController,
               decoration: InputDecoration(labelText: 'Role ID'),
+              keyboardType: TextInputType.number,
+              enabled: false,
             ),
             TextField(
               controller: contrasenaController,
@@ -166,7 +186,6 @@ class _CrearAlumnoState extends State<CrearAlumno> {
     );
   }
 }
-
 class CrearMaestro extends StatefulWidget {
   @override
   _CrearMaestroState createState() => _CrearMaestroState();
@@ -181,18 +200,27 @@ class _CrearMaestroState extends State<CrearMaestro> {
   final TextEditingController contrasenaController = TextEditingController();
 
   void _crearMaestro() async {
-    String rfc = rfcController.text;
-    String nombre = nombreController.text;
-    String departamentoId = departamentoIdController.text;
-    String roleId = roleIdController.text;
-    String contrasena = contrasenaController.text;
+    String rfc = rfcController.text.trim();
+    String nombre = nombreController.text.trim();
+    String departamentoId = departamentoIdController.text.trim();
+    String roleId = roleIdController.text.trim();
+    String contrasena = contrasenaController.text.trim();
+
+    if (rfc.isEmpty ||
+        nombre.isEmpty ||
+        departamentoId.isEmpty ||
+        roleId.isEmpty ||
+        contrasena.isEmpty) {
+      _showDialog('Por favor, completa todos los campos.');
+      return;
+    }
 
     var maestro = {
-      "RFC": rfc,
-      "Nombre": nombre,
-      "DepartamentoID": int.parse(departamentoId),
-      "RoleID": int.parse(roleId),
-      "Contraseña": contrasena,
+      "rfc": rfc,
+      "nombre": nombre,
+      "departamentoId": int.parse(departamentoId),
+      "roleId": int.parse(roleId),
+      "contraseña": contrasena,
     };
 
     var response = await http.post(
@@ -261,10 +289,12 @@ class _CrearMaestroState extends State<CrearMaestro> {
             TextField(
               controller: departamentoIdController,
               decoration: InputDecoration(labelText: 'Departamento ID'),
+              keyboardType: TextInputType.number,
             ),
             TextField(
               controller: roleIdController,
               decoration: InputDecoration(labelText: 'Role ID'),
+              keyboardType: TextInputType.number,
             ),
             TextField(
               controller: contrasenaController,
