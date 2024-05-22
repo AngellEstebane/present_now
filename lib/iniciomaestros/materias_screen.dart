@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart'
-    as http; // Importa esto para las solicitudes HTTP
+import 'package:http/http.dart' as http;
 
 class MateriasScreen extends StatefulWidget {
   @override
@@ -10,32 +9,53 @@ class MateriasScreen extends StatefulWidget {
 
 class _MateriasScreenState extends State<MateriasScreen> {
   List<Materia> materiasAgregadas = [];
-  TextEditingController nombreController =
-      TextEditingController(text: 'Nombre');
-  TextEditingController grupoController = TextEditingController(text: 'Grupo');
-  TextEditingController gradoController = TextEditingController(text: 'Grado');
-  TextEditingController maestroController =
-      TextEditingController(text: 'Maestro');
-  TimeOfDay? selectedTime = TimeOfDay.now();
+  List<String> listaNumeroControl = [];
+  List<String> listaRFCMaestro = [];
+  List<int> listaPlanEstudioId = [];
 
   @override
   void initState() {
     super.initState();
     cargarMaterias();
+    cargarOpciones();
   }
 
-  // Carga las materias desde la API
   Future<void> cargarMaterias() async {
-    final response = await http
-        .get(Uri.parse('https://proyecto-agiles.onrender.com/materias'));
+    final response =
+        await http.get(Uri.parse('https://proyecto-agiles.onrender.com/materias'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
       setState(() {
-        materiasAgregadas = data.map((json) => Materia.fromJson(json)).toList();
+        materiasAgregadas =
+            data.map((json) => Materia.fromJson(json)).toList();
       });
     } else {
-      // Manejo de errores
       throw Exception('Error al cargar materias');
+    }
+  }
+
+  Future<void> cargarOpciones() async {
+    final responseAlumnos =
+        await http.get(Uri.parse('https://proyecto-agiles.onrender.com/alumnos'));
+    final responseProfesores =
+        await http.get(Uri.parse('https://proyecto-agiles.onrender.com/profesores'));
+    final responsePlanesEstudio =
+        await http.get(Uri.parse('https://proyecto-agiles.onrender.com/planesestudio'));
+
+    if (responseAlumnos.statusCode == 200 &&
+        responseProfesores.statusCode == 200 &&
+        responsePlanesEstudio.statusCode == 200) {
+      final dataAlumnos = jsonDecode(responseAlumnos.body);
+      final dataProfesores = jsonDecode(responseProfesores.body);
+      final dataPlanesEstudio = jsonDecode(responsePlanesEstudio.body);
+
+      setState(() {
+        listaNumeroControl = List<String>.from(dataAlumnos.map((alumno) => alumno['numero_control']));
+        listaRFCMaestro = List<String>.from(dataProfesores.map((profesor) => profesor['rfc']));
+        listaPlanEstudioId = List<int>.from(dataPlanesEstudio.map((plan) => plan['id']));
+      });
+    } else {
+      throw Exception('Error al cargar las opciones');
     }
   }
 
@@ -195,7 +215,7 @@ class _MateriasScreenState extends State<MateriasScreen> {
       },
     );
   }
-
+//ya visto
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -318,20 +338,91 @@ class _MateriasScreenState extends State<MateriasScreen> {
           ),
         ],
       ),
-      body: materiasAgregadas.isEmpty
+      //a cambiar
+     body: materiasAgregadas.isEmpty
           ? Center(child: Text('No hay materias agregadas'))
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: ListView.builder(
                 itemCount: materiasAgregadas.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(materiasAgregadas[index].NombreMateria ?? ''),
-                    subtitle: Text(
-                        'Semestre: ${materiasAgregadas[index].Semestre}, Aula: ${materiasAgregadas[index].aula}'),
-                    onTap: () {
-                      editarMateria(materiasAgregadas[index], index);
-                    },
+                  return ExpansionPanelList(
+                    children: [
+                      ExpansionPanel(
+                        headerBuilder:
+                            (BuildContext context, bool isExpanded) {
+                          return ListTile(
+                            title: Text(
+                                materiasAgregadas[index].NombreMateria ?? ''),
+                            subtitle: Text(
+                              'Semestre: ${materiasAgregadas[index].Semestre}, Aula: ${materiasAgregadas[index].aula}',
+                            ),
+                          );
+                        },
+                        body: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              DropdownButtonFormField<String>(
+                                value: materiasAgregadas[index].NumeroControl,
+                                items: listaNumeroControl.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    materiasAgregadas[index].NumeroControl = newValue;
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  labelText: 'Número de Control',
+                                ),
+                              ),
+                              DropdownButtonFormField<String>(
+                                value: materiasAgregadas[index].ProfesorRFC,
+                                items: listaRFCMaestro.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    materiasAgregadas[index].ProfesorRFC = newValue;
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  labelText: 'RFC del Maestro',
+                                ),
+                              ),
+                              DropdownButtonFormField<int>(
+                                value: materiasAgregadas[index].PlanEstudioId,
+                                items: listaPlanEstudioId.map((int value) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  );
+                                }).toList(),
+                                onChanged: (int? newValue) {
+                                  setState(() {
+                                    materiasAgregadas[index].PlanEstudioId = newValue;
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  labelText: 'ID del Plan de Estudio',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        isExpanded: true,
+                      ),
+                    ],
+
+                  
                   );
                 },
               ),
@@ -339,15 +430,14 @@ class _MateriasScreenState extends State<MateriasScreen> {
     );
   }
 }
-
 class Materia {
   final String? ClaveMateria;
   final String? NombreMateria;
   final int? Semestre;
-  final int? PlanEstudioId;
+  String? NumeroControl;
+  String? ProfesorRFC;
+  int? PlanEstudioId;
   final String? HoraInicio;
-  final String? ProfesorRFC;
-  final String? NumeroControl;
   final String? aula;
 
   Materia({
