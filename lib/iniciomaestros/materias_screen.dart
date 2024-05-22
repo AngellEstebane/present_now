@@ -108,7 +108,7 @@ class _MateriasScreenState extends State<MateriasScreen> {
               children: [
                 TextFormField(
                   initialValue: nuevoClaveMateria,
-                  decoration: InputDecoration(labelText: 'Clave Materia'),
+                  decoration: InputDecoration(labelText: 'Nombre'),
                   onChanged: (value) {
                     nuevoClaveMateria = value;
                   },

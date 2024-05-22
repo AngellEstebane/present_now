@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../reticulas/ingenieria_industrial.dart';
-import '../reticulas/materia_item.dart';
 import '../reticulas/ingenieria_electromecanica.dart';
 import '../reticulas/ingenieria_energias_renovables.dart';
 import '../reticulas/ingenieria_gestion.dart';
@@ -20,50 +21,27 @@ class _MateriasScreenState extends State<MateriasScreen> {
     "Ingeniería en Energías Renovables",
   ];
 
-  List<Materia> materias = [
-    Materia(
-      nombre: "Materia 1",
-      grupo: "Grupo 1",
-      grado: "Grado 1",
-      maestro: "Maestro 1",
-      horario: "Horario 1",
-    ),
-    Materia(
-      nombre: "Materia 2",
-      grupo: "Grupo 2",
-      grado: "Grado 2",
-      maestro: "Maestro 2",
-      horario: "Horario 2",
-    ),
-    Materia(
-      nombre: "Materia 3",
-      grupo: "Grupo 3",
-      grado: "Grado 3",
-      maestro: "Maestro 3",
-      horario: "Horario 3",
-    ),
-    Materia(
-      nombre: "Materia 4",
-      grupo: "Grupo 4",
-      grado: "Grado 4",
-      maestro: "Maestro 4",
-      horario: "Horario 4",
-    ),
-    Materia(
-      nombre: "Materia 5",
-      grupo: "Grupo 5",
-      grado: "Grado 5",
-      maestro: "Maestro 5",
-      horario: "Horario 5",
-    ),
-    Materia(
-      nombre: "Materia 6",
-      grupo: "Grupo 6",
-      grado: "Grado 6",
-      maestro: "Maestro 6",
-      horario: "Horario 6",
-    )
-  ];
+  List<Materia> materias = [];
+
+  @override
+  void initState() {
+    super.initState();
+    cargarMaterias();
+  }
+
+  // Carga las materias desde la API
+  Future<void> cargarMaterias() async {
+    final response = await http
+        .get(Uri.parse('https://proyecto-agiles.onrender.com/materias'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      setState(() {
+        materias = data.map((json) => Materia.fromJson(json)).toList();
+      });
+    } else {
+      throw Exception('Error al cargar materias');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +52,6 @@ class _MateriasScreenState extends State<MateriasScreen> {
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              // Mostrar todas las retículas disponibles al presionar el botón de búsqueda
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -85,22 +62,24 @@ class _MateriasScreenState extends State<MateriasScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: materias.length,
-          itemBuilder: (BuildContext context, int index) {
-            return MateriaItem(
-              materia: materias[index],
-            );
-          },
-        ),
-      ),
+      body: materias.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: materias.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return MateriaItem(
+                    materia: materias[index],
+                  );
+                },
+              ),
+            ),
     );
   }
 }
@@ -114,7 +93,7 @@ class ReticulasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reticulas Disponibles'),
+        title: Text('Retículas Disponibles'),
       ),
       body: ListView.builder(
         itemCount: reticulas.length,
@@ -122,7 +101,6 @@ class ReticulasScreen extends StatelessWidget {
           return ListTile(
             title: Text(reticulas[index]),
             onTap: () {
-              // Verificar la retícula seleccionada y abrir el archivo correspondiente
               switch (reticulas[index]) {
                 case "Ingeniería Industrial":
                   Navigator.push(
@@ -166,12 +144,73 @@ class ReticulasScreen extends StatelessWidget {
                   );
                   break;
                 default:
-                  // Acción por defecto si la retícula no coincide con ninguna de las anteriores
                   break;
               }
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class Materia {
+  final String claveMateria;
+  final String nombreMateria;
+  final int semestre;
+  final int planEstudioId;
+  final String horaInicio;
+  final String profesorRfc;
+  final String numeroControl;
+  final String aula;
+
+  Materia({
+    required this.claveMateria,
+    required this.nombreMateria,
+    required this.semestre,
+    required this.planEstudioId,
+    required this.horaInicio,
+    required this.profesorRfc,
+    required this.numeroControl,
+    required this.aula,
+  });
+
+  factory Materia.fromJson(Map<String, dynamic> json) {
+    return Materia(
+      claveMateria: json['ClaveMateria'],
+      nombreMateria: json['NombreMateria'],
+      semestre: json['Semestre'],
+      planEstudioId: json['PlanEstudioId'],
+      horaInicio: json['HoraInicio'],
+      profesorRfc: json['ProfesorRFC'],
+      numeroControl: json['NumeroControl'],
+      aula: json['aula'],
+    );
+  }
+}
+
+class MateriaItem extends StatelessWidget {
+  final Materia materia;
+
+  MateriaItem({required this.materia});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(materia.nombreMateria, style: TextStyle(fontSize: 16)),
+            Text('Grupo: ${materia.numeroControl}'),
+            Text('Grado: ${materia.semestre}'),
+            Text('Maestro: ${materia.profesorRfc}'),
+            Text('Horario: ${materia.horaInicio}',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text('Aula: ${materia.aula}'),
+          ],
+        ),
       ),
     );
   }
