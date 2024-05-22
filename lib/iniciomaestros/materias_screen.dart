@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'package:http/http.dart'
+    as http; // Importa esto para las solicitudes HTTP
 
 class MateriasScreen extends StatefulWidget {
   @override
@@ -9,10 +9,7 @@ class MateriasScreen extends StatefulWidget {
 }
 
 class _MateriasScreenState extends State<MateriasScreen> {
-  // Lista de materias agregadas por el usuario
   List<Materia> materiasAgregadas = [];
-
-  // Controladores para los campos de texto
   TextEditingController nombreController =
       TextEditingController(text: 'Nombre');
   TextEditingController grupoController = TextEditingController(text: 'Grupo');
@@ -24,42 +21,43 @@ class _MateriasScreenState extends State<MateriasScreen> {
   @override
   void initState() {
     super.initState();
-    cargarMaterias(); // Cargar materias al inicializar el widget
+    cargarMaterias();
   }
 
-  // Guarda las materias en SharedPreferences
-  Future<void> guardarMaterias() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> materiasJson = materiasAgregadas
-        .map((materia) => jsonEncode(materia.toJson()))
-        .toList();
-    await prefs.setStringList(
-        'materias', materiasJson); // Cambio de clave a 'materias'
-  }
-
-  // Carga las materias desde SharedPreferences
+  // Carga las materias desde la API
   Future<void> cargarMaterias() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? materiasJson =
-        prefs.getStringList('materias'); // Cambio de clave a 'materias'
-    if (materiasJson != null) {
+    final response = await http
+        .get(Uri.parse('https://proyecto-agiles.onrender.com/materias'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
       setState(() {
-        materiasAgregadas = materiasJson
-            .map((json) => Materia.fromJson(jsonDecode(json)))
-            .toList();
+        materiasAgregadas = data.map((json) => Materia.fromJson(json)).toList();
       });
+    } else {
+      // Manejo de errores
+      throw Exception('Error al cargar materias');
     }
   }
 
-  // Función para agregar una nueva materia a la lista
-  void agregarMateria(Materia materia) {
-    setState(() {
-      materiasAgregadas.add(materia);
-      guardarMaterias(); // Guardar materias al agregar una nueva
-    });
+  // Agrega una nueva materia y la envía a la API
+  Future<void> agregarMateria(Materia materia) async {
+    final response = await http.post(
+      Uri.parse('https://proyecto-agiles.onrender.com/materias'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(materia.toJson()),
+    );
+
+    if (response.statusCode == 201) {
+      setState(() {
+        materiasAgregadas.add(materia);
+      });
+    } else {
+      // Manejo de errores
+      throw Exception('Error al agregar materia');
+    }
   }
 
-  // Función para eliminar una materia de la lista
+  // Elimina una materia de la lista
   void eliminarMateria(int index) {
     showDialog(
       context: context,
@@ -79,7 +77,6 @@ class _MateriasScreenState extends State<MateriasScreen> {
               onPressed: () {
                 setState(() {
                   materiasAgregadas.removeAt(index);
-                  guardarMaterias(); // Guardar materias al eliminar una
                 });
                 Navigator.of(context).pop();
               },
@@ -90,13 +87,16 @@ class _MateriasScreenState extends State<MateriasScreen> {
     );
   }
 
-  // Función para editar una materia
+  // Edita una materia
   void editarMateria(Materia materia, int index) async {
-    String nuevoNombre = materia.nombre ?? '';
-    String nuevoGrupo = materia.grupo ?? '';
-    String nuevoGrado = materia.grado ?? '';
-    String nuevoMaestro = materia.maestro ?? '';
-    TimeOfDay? nuevoHorario = materia.horario;
+    String nuevoClaveMateria = materia.ClaveMateria ?? '';
+    String nuevoNombre = materia.NombreMateria ?? '';
+    int nuevoSemestre = materia.Semestre ?? 0;
+    int nuevoPlanEstudioId = materia.PlanEstudioId ?? 0;
+    String nuevoHoraInicio = materia.HoraInicio ?? '';
+    String nuevoProfesorRFC = materia.ProfesorRFC ?? '';
+    String nuevoNumeroControl = materia.NumeroControl ?? '';
+    String nuevoAula = materia.aula ?? '';
 
     showDialog(
       context: context,
@@ -107,6 +107,13 @@ class _MateriasScreenState extends State<MateriasScreen> {
             child: Column(
               children: [
                 TextFormField(
+                  initialValue: nuevoClaveMateria,
+                  decoration: InputDecoration(labelText: 'Clave Materia'),
+                  onChanged: (value) {
+                    nuevoClaveMateria = value;
+                  },
+                ),
+                TextFormField(
                   initialValue: nuevoNombre,
                   decoration: InputDecoration(labelText: 'Nombre'),
                   onChanged: (value) {
@@ -114,51 +121,45 @@ class _MateriasScreenState extends State<MateriasScreen> {
                   },
                 ),
                 TextFormField(
-                  initialValue: nuevoGrado,
-                  decoration: InputDecoration(labelText: 'Grado'),
+                  initialValue: nuevoSemestre.toString(),
+                  decoration: InputDecoration(labelText: 'Semestre'),
                   onChanged: (value) {
-                    nuevoGrado = value;
+                    nuevoSemestre = int.parse(value);
                   },
                 ),
                 TextFormField(
-                  initialValue: nuevoGrupo,
-                  decoration: InputDecoration(labelText: 'Grupo'),
+                  initialValue: nuevoPlanEstudioId.toString(),
+                  decoration: InputDecoration(labelText: 'Plan Estudio ID'),
                   onChanged: (value) {
-                    nuevoGrupo = value;
+                    nuevoPlanEstudioId = int.parse(value);
                   },
                 ),
                 TextFormField(
-                  initialValue: nuevoMaestro,
-                  decoration: InputDecoration(labelText: 'Maestro'),
+                  initialValue: nuevoHoraInicio,
+                  decoration: InputDecoration(labelText: 'Hora Inicio'),
                   onChanged: (value) {
-                    nuevoMaestro = value;
+                    nuevoHoraInicio = value;
                   },
                 ),
-                ListTile(
-                  title: Text('Hora'),
-                  subtitle: Text(
-                    '${nuevoHorario?.hour}:00',
-                  ),
-                  onTap: () async {
-                    // Mostrar un cuadro de diálogo para seleccionar la hora
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: nuevoHorario ?? TimeOfDay.now(),
-                      builder: (BuildContext context, Widget? child) {
-                        return MediaQuery(
-                          data: MediaQuery.of(context)
-                              .copyWith(alwaysUse24HourFormat: true),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (pickedTime != null) {
-                      setState(() {
-                        // Fijar los minutos en 00
-                        nuevoHorario =
-                            TimeOfDay(hour: pickedTime.hour, minute: 0);
-                      });
-                    }
+                TextFormField(
+                  initialValue: nuevoProfesorRFC,
+                  decoration: InputDecoration(labelText: 'Profesor RFC'),
+                  onChanged: (value) {
+                    nuevoProfesorRFC = value;
+                  },
+                ),
+                TextFormField(
+                  initialValue: nuevoNumeroControl,
+                  decoration: InputDecoration(labelText: 'Numero Control'),
+                  onChanged: (value) {
+                    nuevoNumeroControl = value;
+                  },
+                ),
+                TextFormField(
+                  initialValue: nuevoAula,
+                  decoration: InputDecoration(labelText: 'Aula'),
+                  onChanged: (value) {
+                    nuevoAula = value;
                   },
                 ),
               ],
@@ -176,66 +177,18 @@ class _MateriasScreenState extends State<MateriasScreen> {
               onPressed: () {
                 setState(() {
                   materiasAgregadas[index] = Materia(
-                    nombre: nuevoNombre,
-                    grupo: nuevoGrupo,
-                    grado: nuevoGrado,
-                    maestro: nuevoMaestro,
-                    horario: nuevoHorario,
+                    ClaveMateria: materia.ClaveMateria,
+                    NombreMateria: nuevoNombre,
+                    Semestre: nuevoSemestre,
+                    PlanEstudioId: nuevoPlanEstudioId,
+                    HoraInicio: nuevoHoraInicio,
+                    ProfesorRFC: nuevoProfesorRFC,
+                    NumeroControl: nuevoNumeroControl,
+                    aula: nuevoAula,
                   );
-                  guardarMaterias(); // Guardar materias al editar
                 });
                 Navigator.of(context).pop();
               },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Función para agregar un alumno a la materia
-  void agregarAlumno(Materia materia) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String materiaKey = 'materia_${materia.nombre}_${materia.grupo}_${materia.horario}';
-    final String alumnoKey = 'alumnos_$materiaKey';
-    
-    // Mostrar diálogo para ingresar datos del alumno
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        String nombre = '';
-        String noDeControl = '';
-        return AlertDialog(
-          title: Text('Agregar Alumno'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                decoration: InputDecoration(labelText: 'Nombre'),
-                onChanged: (value) {
-                  nombre = value;
-                },
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'No De Control'),
-                onChanged: (value) {
-                  noDeControl = value;
-                },
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () async {
-                if (nombre.isNotEmpty && noDeControl.isNotEmpty) {
-                  final Alumno nuevoAlumno = Alumno(nombre: nombre, noDeControl: noDeControl);
-                  final List<String> alumnos = prefs.getStringList(alumnoKey) ?? [];
-                  alumnos.add(jsonEncode(nuevoAlumno.toJson()));
-                  prefs.setStringList(alumnoKey, alumnos);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Text('Agregar'),
             ),
           ],
         );
@@ -252,14 +205,17 @@ class _MateriasScreenState extends State<MateriasScreen> {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              // Muestra un cuadro de diálogo para agregar una nueva materia
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
+                  String nuevoClaveMateria = '';
                   String nuevoNombre = '';
-                  String nuevoGrupo = '';
-                  String nuevoGrado = '';
-                  String nuevoMaestro = '';
+                  int nuevoSemestre = 0;
+                  int nuevoPlanEstudioId = 0;
+                  String nuevoHoraInicio = '';
+                  String nuevoProfesorRFC = '';
+                  String nuevoNumeroControl = '';
+                  String nuevoAula = '';
 
                   return StatefulBuilder(
                     builder: (BuildContext context, setState) {
@@ -269,33 +225,58 @@ class _MateriasScreenState extends State<MateriasScreen> {
                           child: Column(
                             children: [
                               TextFormField(
-                                initialValue: nuevoNombre,
-                                decoration:
-                                    InputDecoration(labelText: 'Nombre'),
+                                decoration: InputDecoration(
+                                    labelText: 'Clave De Materia'),
+                                onChanged: (value) {
+                                  nuevoClaveMateria = value;
+                                },
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                    labelText: 'Nombre De Materia'),
                                 onChanged: (value) {
                                   nuevoNombre = value;
                                 },
                               ),
                               TextFormField(
-                                initialValue: nuevoGrado,
-                                decoration: InputDecoration(labelText: 'Grado'),
-                                onChanged: (value) {
-                                  nuevoGrado = value;
-                                },
-                              ),
-                              TextFormField(
-                                initialValue: nuevoGrupo,
-                                decoration: InputDecoration(labelText: 'Grupo'),
-                                onChanged: (value) {
-                                  nuevoGrupo = value;
-                                },
-                              ),
-                              TextFormField(
-                                initialValue: nuevoMaestro,
                                 decoration:
-                                    InputDecoration(labelText: 'Maestro'),
+                                    InputDecoration(labelText: 'Semestre'),
                                 onChanged: (value) {
-                                  nuevoMaestro = value;
+                                  nuevoSemestre = int.parse(value);
+                                },
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                    labelText: 'Plan Estudio ID'),
+                                onChanged: (value) {
+                                  nuevoPlanEstudioId = int.parse(value);
+                                },
+                              ),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Hora Inicio'),
+                                onChanged: (value) {
+                                  nuevoHoraInicio = value;
+                                },
+                              ),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Profesor RFC'),
+                                onChanged: (value) {
+                                  nuevoProfesorRFC = value;
+                                },
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                    labelText: 'Numero Control'),
+                                onChanged: (value) {
+                                  nuevoNumeroControl = value;
+                                },
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(labelText: 'Aula'),
+                                onChanged: (value) {
+                                  nuevoAula = value;
                                 },
                               ),
                             ],
@@ -311,23 +292,17 @@ class _MateriasScreenState extends State<MateriasScreen> {
                           TextButton(
                             child: Text('Agregar'),
                             onPressed: () {
-                              // Agrega una nueva materia a la lista
                               agregarMateria(
                                 Materia(
-                                  nombre: nuevoNombre.isNotEmpty
-                                      ? nuevoNombre
-                                      : 'Nombre',
-                                  grupo: nuevoGrupo.isNotEmpty
-                                      ? nuevoGrupo
-                                      : 'Grupo',
-                                  grado: nuevoGrado.isNotEmpty
-                                      ? nuevoGrado
-                                      : 'Grado',
-                                  maestro: nuevoMaestro.isNotEmpty
-                                      ? nuevoMaestro
-                                      : 'Maestro',
-                                  horario: TimeOfDay
-                                      .now(), // Establecer horario a la hora actual
+                                  ClaveMateria: nuevoClaveMateria,
+                                  // Se puede ajustar según tu lógica
+                                  NombreMateria: nuevoNombre,
+                                  Semestre: nuevoSemestre,
+                                  PlanEstudioId: nuevoPlanEstudioId,
+                                  HoraInicio: nuevoHoraInicio,
+                                  ProfesorRFC: nuevoProfesorRFC,
+                                  NumeroControl: nuevoNumeroControl,
+                                  aula: nuevoAula,
                                 ),
                               );
                               Navigator.of(context).pop();
@@ -344,33 +319,17 @@ class _MateriasScreenState extends State<MateriasScreen> {
         ],
       ),
       body: materiasAgregadas.isEmpty
-          ? Center(
-              child: Text('No hay materias agregadas'),
-            )
+          ? Center(child: Text('No hay materias agregadas'))
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: ListView.builder(
                 itemCount: materiasAgregadas.length,
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Text(materiasAgregadas[index].nombre ?? ''),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.person_add),
-                          onPressed: () {
-                            // Agregar alumno al hacer clic en el botón
-                            agregarAlumno(materiasAgregadas[index]);
-                          },
-                        ),
-                      ],
-                    ),
+                    title: Text(materiasAgregadas[index].NombreMateria ?? ''),
                     subtitle: Text(
-                        'Grado: ${materiasAgregadas[index].grado ?? ''}, Grupo: ${materiasAgregadas[index].grupo ?? ''}, Maestro: ${materiasAgregadas[index].maestro ?? ''}'),
+                        'Semestre: ${materiasAgregadas[index].Semestre}, Aula: ${materiasAgregadas[index].aula}'),
                     onTap: () {
-                      // Editar la materia al hacer clic
                       editarMateria(materiasAgregadas[index], index);
                     },
                   );
@@ -382,58 +341,49 @@ class _MateriasScreenState extends State<MateriasScreen> {
 }
 
 class Materia {
-  final String? nombre;
-  final String? grupo;
-  final String? grado;
-  final String? maestro;
-  final TimeOfDay? horario;
+  final String? ClaveMateria;
+  final String? NombreMateria;
+  final int? Semestre;
+  final int? PlanEstudioId;
+  final String? HoraInicio;
+  final String? ProfesorRFC;
+  final String? NumeroControl;
+  final String? aula;
 
   Materia({
-    required this.nombre,
-    required this.grupo,
-    required this.grado,
-    required this.maestro,
-    required this.horario,
+    required this.ClaveMateria,
+    required this.NombreMateria,
+    required this.Semestre,
+    required this.PlanEstudioId,
+    required this.HoraInicio,
+    required this.ProfesorRFC,
+    required this.NumeroControl,
+    required this.aula,
   });
 
-  // Convertir Materia a JSON
   Map<String, dynamic> toJson() {
     return {
-      'nombre': nombre,
-      'grupo': grupo,
-      'grado': grado,
-      'maestro': maestro,
-      'horario': horario?.toString(),
+      'ClaveMateria': ClaveMateria,
+      'NombreMateria': NombreMateria,
+      'Semestre': Semestre,
+      'PlanEstudioId': PlanEstudioId,
+      'HoraInicio': HoraInicio,
+      'ProfesorRFC': ProfesorRFC,
+      'NumeroControl': NumeroControl,
+      'aula': aula,
     };
   }
 
-  // Crear Materia desde JSON
   factory Materia.fromJson(Map<String, dynamic> json) {
     return Materia(
-      nombre: json['nombre'],
-      grupo: json['grupo'],
-      grado: json['grado'],
-      maestro: json['maestro'],
-      horario: TimeOfDay.now(), // Establecer horario a la hora actual
+      ClaveMateria: json['ClaveMateria'],
+      NombreMateria: json['NombreMateria'],
+      Semestre: json['Semestre'],
+      PlanEstudioId: json['PlanEstudioId'],
+      HoraInicio: json['HoraInicio'],
+      ProfesorRFC: json['ProfesorRFC'],
+      NumeroControl: json['NumeroControl'],
+      aula: json['aula'],
     );
   }
 }
-
-class Alumno {
-  final String nombre;
-  final String noDeControl;
-
-  Alumno({
-    required this.nombre,
-    required this.noDeControl,
-  });
-
-  // Convertir Alumno a JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'nombre': nombre,
-      'noDeControl': noDeControl,
-    };
-  }
-}
-
