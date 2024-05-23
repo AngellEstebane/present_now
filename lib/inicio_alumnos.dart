@@ -173,6 +173,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
         key, isPresent); // Guarda el estado de asistencia en SharedPreferences
   }
 
+  String _currentLocation = 'Coordenadas no disponibles';
   void _getLocation() async {
     bool serviceEnabled = await Geolocator
         .isLocationServiceEnabled(); // Verifica si el servicio de ubicación está habilitado
@@ -198,8 +199,8 @@ class _InicioAlumnosState extends State<InicioAlumnos>
         desiredAccuracy: LocationAccuracy.high); // Obtiene la ubicación actual
 
     setState(() {
-      print(
-          'Ubicación actual: ${position.latitude}, ${position.longitude}'); // Imprime la ubicación actual en la consola
+      // Aquí puedes mostrar la ubicación en la interfaz de usuario
+      print('Ubicación actual: ${position.latitude}, ${position.longitude}');
     });
   }
 
@@ -381,11 +382,57 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                       ),
                     ),
                   ),
+                  SizedBox(width: 10),
+                  AnimatedBuilder(
+                    animation: progressController,
+                    builder: (context, child) {
+                      return SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: CircularProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
-            ),
-          );
-        },
+              SizedBox(height: 20.0),
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'GPS',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Ubicación actual: (COORDENADAS)',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed:
+                          _getLocation, // Llamar a la función para obtener la ubicación
+                      child: Text('Actualizar Ubicación'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

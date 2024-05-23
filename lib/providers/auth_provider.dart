@@ -92,4 +92,18 @@ class AuthProvider extends ChangeNotifier {
       print('Error en la solicitud: ${response.statusCode}, ${response.body}');
     }
   }
+
+
+  // Método logout
+  Future<void> logout() async {
+    // Eliminar el token almacenado de forma segura
+    await _storage.delete(key: 'jwt_token');
+
+    // Restablecer las variables de estado
+    _token = null;
+    _role = null;
+
+    // Notificar a los oyentes para que actualicen la UI
+    notifyListeners();
+  }
 }

@@ -4,6 +4,8 @@ import 'package:present_now/inicio_maestros.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter/services.dart';
+
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -12,6 +14,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  //Ver pass
+  bool _obscureText = true;
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+  //Ver pass
 
 //saber si es alumno o maestro segun rfc o nc ingresado
   Future<void> _login() async {
@@ -88,11 +99,22 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _idController,
               decoration:
                   InputDecoration(labelText: 'ID (NumeroControl o RFC)'),
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+              ],
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: _togglePasswordVisibility,
+                ),
+              ),
+              obscureText: _obscureText,
             ),
             SizedBox(height: 20),
             ElevatedButton(
