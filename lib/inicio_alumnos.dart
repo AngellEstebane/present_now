@@ -1,37 +1,25 @@
-import 'dart:async'; // Para usar temporizadores y otros objetos asíncronos
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatear fechas y horas
-import 'package:shared_preferences/shared_preferences.dart'; // Para almacenar datos localmente
-import 'inicioalumnos/mis_archivos_screen.dart'; // Importación de pantallas
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'inicioalumnos/mis_archivos_screen.dart';
 import 'inicioalumnos/charlar_screen.dart';
 import 'inicioalumnos/materias_screen.dart';
 import 'inicioalumnos/avisos_screen.dart';
 import 'inicioalumnos/desconectado_screen.dart';
 import 'inicioalumnos/justificantes_screen.dart';
 import 'inicioalumnos/cerrar_sesion_screen.dart';
-import 'package:geolocator/geolocator.dart'; // Para manejar la geolocalización
-
-import 'package:provider/provider.dart'; // Para el manejo del estado
-import 'providers/materia_provider.dart'; // Proveedor de datos de materias
+import 'package:geolocator/geolocator.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-            create: (_) =>
-                MateriaProvider()), // Inicializa el proveedor de materias
-      ],
-      child: MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: InicioAlumnos(), // Pantalla principal de la aplicación
+      home: InicioAlumnos(),
     );
   }
 }
@@ -43,161 +31,185 @@ class InicioAlumnos extends StatefulWidget {
 
 class _InicioAlumnosState extends State<InicioAlumnos>
     with TickerProviderStateMixin {
-  String currentTime = ""; // Almacena la hora actual
-  String currentDate = ""; // Almacena la fecha actual
-  int currentMateriaIndex = 0; // Índice de la materia actual
-  double progress = 0.0; // Progreso de la barra de progreso
-  late AnimationController
-      progressController; // Controlador de animación para la barra de progreso
-  Color barColor = Colors.blue; // Color de la barra de progreso
-  List<Color> materiaColors =
-      List.generate(6, (index) => Colors.blue); // Colores para cada materia
+  String currentTime = "";
+  String currentDate = "";
+  int currentMateriaIndex = 0;
+  double progress = 0.0;
+  late AnimationController progressController;
+  Color barColor = Colors.blue;
+  List<Color> materiaColors = [
+    Colors.blue,
+    Colors.blue,
+    Colors.blue,
+    Colors.blue,
+    Colors.blue,
+    Colors.blue
+  ];
+  List<String> materiaTimes = [
+    "08:00 AM",
+    "09:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "01:00 PM"
+  ]; // Horas personalizadas para cada materia
 
-  bool showAttendance = false; // Controla la visualización de la asistencia
-  bool daySaved = false; // Indica si el día ha sido guardado
+  List<String> materias = [
+    "Materia 1",
+    "Materia 2",
+    "Materia 3",
+    "Materia 4",
+    "Materia 5",
+    "Materia 6"
+  ];
+  bool showAttendance = false;
+  bool daySaved = false;
   bool attendanceButtonDisabled =
-      false; // Controla el estado del botón de asistencia
+      false; // Variable para controlar si el botón de asistencia está bloqueado
 
   @override
   void initState() {
     super.initState();
-    updateDateTime(); // Actualiza la fecha y la hora
-    calculateProgress(); // Calcula el progreso de la barra
+    updateDateTime();
+    calculateProgress();
 
-    // Configura el controlador de animación para una duración de 60 minutos
     progressController = AnimationController(
       vsync: this,
       duration: Duration(minutes: 60),
     );
 
-    progressController.forward(); // Inicia la animación
+    progressController.forward();
 
-    // Configura un temporizador para actualizar la hora y el progreso cada minuto
     Timer.periodic(Duration(minutes: 1), (timer) {
       setState(() {
-        updateDateTime(); // Actualiza la hora actual
-        calculateProgress(); // Recalcula el progreso de la barra
+        updateDateTime();
+        calculateProgress();
       });
 
-      // Si es el primer minuto de una nueva hora
       if (DateTime.now().minute == 0) {
-        progressController.reset(); // Reinicia la animación
-        progressController.forward(); // Vuelve a iniciar la animación
+        progressController.reset();
+        progressController.forward();
+        // Cambiar de materia
         setState(() {
-          currentMateriaIndex = (currentMateriaIndex + 1) %
-              6; // Actualiza el índice de la materia
+          currentMateriaIndex = (currentMateriaIndex + 1) % materias.length;
+          // Restablecer el color de la materia a azul cuando cambia de materia
           for (int i = 0; i < materiaColors.length; i++) {
-            materiaColors[i] =
-                Colors.blue; // Resetea los colores de las materias
+            materiaColors[i] = Colors.blue;
           }
         });
+        // Guardar el día
         if (!daySaved) {
-          daySaved = true; // Marca el día como guardado
-          saveDay(); // Guarda el día
+          daySaved = true;
+          saveDay();
+          // Guardar inasistencia al inicio del día si no hay asistencia registrada
           if (!showAttendance) {
-            saveAttendance(true, false); // Guarda la asistencia
+            saveAttendance(true, false);
           }
         }
+
+        // Activar el botón de asistencia después de que cambie la hora
         setState(() {
-          attendanceButtonDisabled = false; // Habilita el botón de asistencia
+          attendanceButtonDisabled = false;
         });
       } else {
-        daySaved = false; // Marca el día como no guardado
+        daySaved = false; // Restablecer la bandera para guardar el día
       }
     });
   }
 
   @override
   void dispose() {
-    progressController.dispose(); // Libera el controlador de animación
+    progressController.dispose();
     super.dispose();
   }
 
   void calculateProgress() {
-    int currentMinute = DateTime.now().minute; // Obtiene el minuto actual
-    progress =
-        currentMinute / 60.0; // Calcula el progreso en base al minuto actual
+    int currentMinute = DateTime.now().minute;
+    progress = currentMinute / 60.0;
 
-    int hour = DateTime.now().hour; // Obtiene la hora actual
+    // Actualizar el índice de la materia actual según la hora del día
+    int hour = DateTime.now().hour;
     if (hour >= 8 && hour <= 13) {
-      currentMateriaIndex = hour - 8; // Calcula el índice de la materia actual
+      currentMateriaIndex = hour - 8;
     } else {
-      currentMateriaIndex = -1; // Si no está en el rango, asigna -1
+      currentMateriaIndex = -1; // Fuera del horario de las materias
     }
 
-    // Cambia los colores de la barra y de las materias según el minuto actual
-    if (currentMateriaIndex >= 0 && currentMateriaIndex < 6) {
+    // Verificar si el horario actual está dentro del rango de alguna materia
+    if (currentMateriaIndex >= 0 && currentMateriaIndex < materias.length) {
       if (currentMinute < 15) {
         barColor = Colors.green;
         materiaColors[currentMateriaIndex] = Colors.green;
       } else if (currentMinute >= 15 && currentMinute <= 20) {
-        barColor = Colors.yellow;
+        barColor = Colors.yellow; // Cambiado a amarillo en lugar de azul
         materiaColors[currentMateriaIndex] = Colors.yellow;
       } else if (currentMinute > 20 && currentMinute < 60) {
         barColor = Colors.red;
         materiaColors[currentMateriaIndex] = Colors.red;
       } else {
-        barColor = Colors.blue;
+        barColor = Colors.blue; // Restablecer a azul fuera del rango de tiempo
         materiaColors[currentMateriaIndex] = Colors.blue;
       }
     } else {
-      barColor = Colors.blue; // Si no está en el rango, asigna el color azul
+      // Si no hay ninguna materia programada para el horario actual, restablecer a azul
+      barColor = Colors.blue;
     }
   }
 
   void updateDateTime() {
     setState(() {
-      currentTime = DateFormat('hh:mm a')
-          .format(DateTime.now()); // Actualiza la hora actual
-      currentDate = DateFormat('EEEE dd/MM/yyyy')
-          .format(DateTime.now()); // Actualiza la fecha actual
+      currentTime = DateFormat('hh:mm a').format(DateTime.now());
+      currentDate = DateFormat('EEEE dd/MM/yyyy').format(DateTime.now());
     });
   }
 
   void saveDay() {
-    print(
-        'Día guardado: $currentDate'); // Imprime el día guardado en la consola
+    // Implementa aquí la lógica para guardar el día actual
+    print('Día guardado: $currentDate');
   }
 
   void saveAttendance(bool isLate, bool isPresent) async {
-    SharedPreferences prefs = await SharedPreferences
-        .getInstance(); // Obtiene una instancia de SharedPreferences
-    String key =
-        "${currentDate}_${Provider.of<MateriaProvider>(context, listen: false).materias[currentMateriaIndex].nombreMateria}"; // Crea una clave única para la asistencia
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Guardar el registro de asistencia
+    String key = "${currentDate}_${materias[currentMateriaIndex]}";
 
+    // Verificar si no se mandó ninguna asistencia para marcar como inasistencia
     if (!isLate && !isPresent) {
-      isPresent = false; // Si no está tarde ni presente, asigna falso
+      isPresent = false; // Marcar como inasistencia
     }
 
     prefs.setBool(
-        key, isPresent); // Guarda el estado de asistencia en SharedPreferences
+        key, isPresent); // true para asistencia, false para inasistencia
   }
 
-  String _currentLocation = 'Coordenadas no disponibles';
   void _getLocation() async {
-    bool serviceEnabled = await Geolocator
-        .isLocationServiceEnabled(); // Verifica si el servicio de ubicación está habilitado
+    // Verificar si el usuario ha otorgado permiso para acceder a la ubicación
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      bool serviceStatus = await Geolocator
-          .openLocationSettings(); // Abre la configuración de ubicación si no está habilitada
+      // Si el servicio de ubicación no está habilitado, solicitar al usuario que lo habilite
+      bool serviceStatus = await Geolocator.openLocationSettings();
       if (!serviceStatus) {
+        // El usuario no habilitó el servicio de ubicación, mostrar un mensaje o tomar otra acción según sea necesario
         return;
       }
     }
 
-    LocationPermission permission = await Geolocator
-        .checkPermission(); // Verifica los permisos de ubicación
+    // Verificar si se ha otorgado el permiso de ubicación
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator
-          .requestPermission(); // Solicita permisos si están denegados
+      // Si el permiso de ubicación está denegado, solicitar al usuario que lo habilite
+      permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        // El usuario negó el permiso de ubicación, mostrar un mensaje o tomar otra acción según sea necesario
         return;
       }
     }
 
+    // Obtener la ubicación actual
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high); // Obtiene la ubicación actual
+        desiredAccuracy: LocationAccuracy.high);
 
+    // Actualizar la interfaz de usuario con la ubicación obtenida
     setState(() {
       // Aquí puedes mostrar la ubicación en la interfaz de usuario
       print('Ubicación actual: ${position.latitude}, ${position.longitude}');
@@ -208,9 +220,8 @@ class _InicioAlumnosState extends State<InicioAlumnos>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Present Now'), // Título de la barra de la aplicación
-        backgroundColor:
-            Colors.blue, // Color de fondo de la barra de la aplicación
+        title: Text('Present Now'),
+        backgroundColor: Colors.blue,
       ),
       drawer: Drawer(
         child: ListView(
@@ -218,15 +229,14 @@ class _InicioAlumnosState extends State<InicioAlumnos>
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue, // Color de fondo del encabezado del cajón
+                color: Colors.blue,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundImage: NetworkImage(
-                        'URL_DE_TU_FOTO'), // Imagen de perfil del usuario
+                    backgroundImage: NetworkImage('URL_DE_TU_FOTO'),
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -246,15 +256,13 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                 ],
               ),
             ),
-            // Agrega tus elementos ListTile aquí
             ListTile(
               title: Text('Mis archivos'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => MisArchivosScreen()), // Navega a
-                ); // Navega a la pantalla de "Mis archivos"
+                  MaterialPageRoute(builder: (context) => MisArchivosScreen()),
+                );
               },
             ),
             ListTile(
@@ -262,9 +270,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          CharlarScreen()), // Navega a la pantalla de "Charlar"
+                  MaterialPageRoute(builder: (context) => CharlarScreen()),
                 );
               },
             ),
@@ -273,9 +279,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          MateriasScreen()), // Navega a la pantalla de "Materias"
+                  MaterialPageRoute(builder: (context) => MateriasScreen()),
                 );
               },
             ),
@@ -284,9 +288,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          AvisosScreen()), // Navega a la pantalla de "Avisos recientes"
+                  MaterialPageRoute(builder: (context) => AvisosScreen()),
                 );
               },
             ),
@@ -295,9 +297,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          DesconectadoScreen()), // Navega a la pantalla de "Modo desconectado"
+                  MaterialPageRoute(builder: (context) => DesconectadoScreen()),
                 );
               },
             ),
@@ -307,8 +307,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          JustificantesScreen()), // Navega a la pantalla de "Justificantes"
+                      builder: (context) => JustificantesScreen()),
                 );
               },
             ),
@@ -317,68 +316,170 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          CerrarSesionScreen()), // Navega a la pantalla de "Cerrar sesión"
+                  MaterialPageRoute(builder: (context) => CerrarSesionScreen()),
                 );
               },
             ),
           ],
         ),
       ),
-      body: Consumer<MateriaProvider>(
-        builder: (context, materiaProvider, child) {
-          if (materiaProvider.isLoading) {
-            return Center(
-                child:
-                    CircularProgressIndicator()); // Muestra un indicador de carga si los datos están cargando
-          }
-
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
+                  Text(
+                    currentDate,
+                    style: TextStyle(fontSize: 20.0),
+                  ),
+                  Spacer(),
+                  Text(currentTime),
+                ],
+              ),
+              SizedBox(height: 10.0),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        currentDate,
-                        style: TextStyle(
-                            fontSize: 20.0), // Muestra la fecha actual
+                        'Recordatorios de Materias',
+                        style: TextStyle(fontSize: 20.0),
                       ),
-                      Spacer(),
-                      Text(currentTime), // Muestra la hora actual
+                      SizedBox(height: 5.0),
+                      for (var i = 0; i < materias.length; i++)
+                        ListTile(
+                          title: Text(
+                            '${materias[i]}: ${materiaTimes[i]}', // Mostrar la hora personalizada para cada materia
+                            style: TextStyle(
+                              color: materiaColors[i], // Color de la materia
+                            ),
+                          ),
+                        ),
                     ],
                   ),
-                  SizedBox(height: 10.0),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: Colors.grey), // Contenedor con borde gris
+                ),
+              ),
+              SizedBox(height: 10.0),
+              if (currentMateriaIndex >= 0 && showAttendance)
+                Container(
+                  color: currentMateriaIndex < materias.length
+                      ? materiaColors[currentMateriaIndex]
+                      : Colors.grey,
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    currentMateriaIndex < materias.length
+                        ? materias[currentMateriaIndex]
+                        : 'Todavía no ha comenzado el día',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      color: Colors.black,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Recordatorios de Materias',
-                            style: TextStyle(
-                                fontSize:
-                                    20.0), // Título de los recordatorios de materias
-                          ),
-                          SizedBox(height: 5.0),
-                          for (var i = 0;
-                              i < materiaProvider.materias.length;
-                              i++) // Itera sobre las materias
-                            ListTile(
-                              title: Text(materiaProvider.materias[i]
-                                  .nombreMateria), // Nombre de la materia
-                              subtitle: Text(materiaProvider.materias[i]
-                                  .horaInicio), // Hora de inicio de la materia
-                            ),
-                        ],
+                  ),
+                ),
+              SizedBox(height: 10.0),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      if (attendanceButtonDisabled) return;
+
+                      if (showAttendance) {
+                        // Si ya se ha registrado la asistencia, cambiar el color de la materia a azul
+                        setState(() {
+                          materiaColors[currentMateriaIndex] = Colors.blue;
+                          showAttendance = false;
+                        });
+                      } else {
+                        // Código existente para registrar la asistencia
+                        if (!showAttendance) {
+                          // Calcular el progreso y actualizar los colores de las materias
+                          calculateProgress();
+
+                          // Verificar el intervalo de tiempo y actualizar los colores de las materias
+                          if (DateTime.now().minute <= 15 &&
+                              currentMateriaIndex >= 0) {
+                            // Cambiar el color de la barra y el recuadro de la materia a verde
+                            setState(() {
+                              materiaColors[currentMateriaIndex] = Colors.green;
+                              showAttendance = true;
+                            });
+                            // Mostrar mensaje de éxito en el registro de asistencia con retraso de 2 segundos
+                            Future.delayed(Duration(seconds: 2), () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Éxito en registrar asistencia'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            });
+                          } else if (DateTime.now().minute > 15 &&
+                              DateTime.now().minute <= 20 &&
+                              currentMateriaIndex >= 0) {
+                            // Cambiar el color de la barra y el recuadro de la materia a amarillo
+                            setState(() {
+                              materiaColors[currentMateriaIndex] =
+                                  Colors.yellow;
+                              showAttendance = true;
+                            });
+                            // Mostrar mensaje de asistencia registrada con retraso de 2 segundos
+                            Future.delayed(Duration(seconds: 2), () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Asistencia registrada con retraso'),
+                                  backgroundColor: Colors.yellow,
+                                ),
+                              );
+                            });
+                          } else if (DateTime.now().minute > 20 &&
+                              currentMateriaIndex >= 0) {
+                            // Cambiar el color de la barra y el recuadro de la materia a rojo
+                            setState(() {
+                              materiaColors[currentMateriaIndex] = Colors.red;
+                              showAttendance = true;
+                            });
+                            // Mostrar mensaje de error en el registro de asistencia con retraso de 2 segundos
+                            Future.delayed(Duration(seconds: 2), () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Error al registrar asistencia'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            });
+                          }
+
+                          // Desactivar el botón de asistencia después de hacer clic
+                          setState(() {
+                            attendanceButtonDisabled = true;
+                          });
+                        }
+                      }
+                    },
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: showAttendance ? Colors.grey : Colors.blue,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Asistencia',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
