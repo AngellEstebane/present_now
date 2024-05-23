@@ -7,7 +7,7 @@ class CerrarSesionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cerrar sesión'),
+        title: const Text('Cerrar sesión'),
       ),
       body: Center(
         child: ElevatedButton(
@@ -17,14 +17,14 @@ class CerrarSesionScreen extends StatelessWidget {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Confirmación'),
-                  content: Text('¿Seguro que quieres cerrar sesión?'),
+                  title: const Text('Confirmación'),
+                  content: const Text('¿Seguro que quieres cerrar sesión?'),
                   actions: <Widget>[
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop(false); // Cancelar
                       },
-                      child: Text('Cancelar'),
+                      child: const Text('Cancelar'),
                     ),
                     TextButton(
                       onPressed: () {
