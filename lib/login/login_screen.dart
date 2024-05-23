@@ -15,6 +15,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  //Ver pass
+  bool _obscureText = true;
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+  //Ver pass
+
 //saber si es alumno o maestro segun rfc o nc ingresado
   Future<void> _login() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -90,14 +99,22 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _idController,
               decoration:
                   InputDecoration(labelText: 'ID (NumeroControl o RFC)'),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                  ],
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+              ],
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: _togglePasswordVisibility,
+                ),
+              ),
+              obscureText: _obscureText,
             ),
             SizedBox(height: 20),
             ElevatedButton(
