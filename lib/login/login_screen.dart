@@ -4,6 +4,8 @@ import 'package:present_now/inicio_maestros.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter/services.dart';
+
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -88,6 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _idController,
               decoration:
                   InputDecoration(labelText: 'ID (NumeroControl o RFC)'),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  ],
             ),
             TextField(
               controller: _passwordController,
