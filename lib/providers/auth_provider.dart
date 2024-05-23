@@ -6,9 +6,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class AuthProvider extends ChangeNotifier {
   String? _token;
   String? _role;
+  String? _numeroControl; // Nuevo atributo para almacenar el número de control
 
   String? get token => _token;
   String? get role => _role;
+  String? get numeroControl =>
+      _numeroControl; // Nuevo getter para el número de control
 
   final _storage = FlutterSecureStorage();
 
@@ -26,13 +29,22 @@ class AuthProvider extends ChangeNotifier {
       final data = jsonDecode(response.body);
       _token = data['token'];
       _role = 'alumno';
+      _numeroControl = numeroControl; // Almacenar el número de control
 
       await _storage.write(key: 'jwt_token', value: _token!);
+      await _storage.write(
+          key: 'numero_control',
+          value:
+              _numeroControl!); // Almacenar el número de control en el almacenamiento seguro
 
       notifyListeners();
     } else {
       throw Exception('Autenticación fallida');
     }
+  }
+
+  Future<String?> cargarNumeroControl() async {
+    return await _storage.read(key: 'numero_control');
   }
 
   Future<void> autenticarMaestro(String rfc, String password) async {
