@@ -101,6 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   InputDecoration(labelText: 'ID (NumeroControl o RFC)'),
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                UpperCaseTextInputFormatter(),
               ],
             ),
             TextField(
@@ -124,6 +125,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class UpperCaseTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }
