@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } //else if (RegExp(r'^[A-Z]{4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
-      else if (RegExp(r'^[A-Z]{4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) || RegExp(r'^[A-Z]{3}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
+      else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
       // Si el ID tiene el formato de RFC válido y tiene 13 caracteres, asumimos que es un RFC de maestro
       try {
         await authProvider.autenticarMaestro(id, password);
