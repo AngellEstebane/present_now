@@ -184,6 +184,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
         key, isPresent); // true para asistencia, false para inasistencia
   }
 
+  String _currentLocation = 'Coordenadas no disponibles';
   void _getLocation() async {
     // Verificar si el usuario ha otorgado permiso para acceder a la ubicación
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -215,6 +216,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
     setState(() {
       // Aquí puedes mostrar la ubicación en la interfaz de usuario
       print('Ubicación actual: ${position.latitude}, ${position.longitude}');
+      _currentLocation = '${position.latitude}, ${position.longitude}';
     });
   }
 
@@ -522,7 +524,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Ubicación actual: (COORDENADAS)',
+                      'Ubicación actual: $_currentLocation',
                       style: TextStyle(fontSize: 16),
                     ),
                     SizedBox(height: 10),
