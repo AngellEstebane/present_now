@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (id.length > 13) {
+    if (id.length <= 13) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
