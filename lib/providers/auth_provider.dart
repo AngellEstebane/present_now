@@ -7,11 +7,13 @@ class AuthProvider extends ChangeNotifier {
   String? _token;
   String? _role;
   String? _numeroControl; // Nuevo atributo para almacenar el número de control
+  String? _nombreAlumno;
 
   String? get token => _token;
   String? get role => _role;
   String? get numeroControl =>
       _numeroControl; // Nuevo getter para el número de control
+  String? get nombreAlumno => _nombreAlumno;
 
   final _storage = FlutterSecureStorage();
 
@@ -30,6 +32,7 @@ class AuthProvider extends ChangeNotifier {
       _token = data['token'];
       _role = 'alumno';
       _numeroControl = numeroControl; // Almacenar el número de control
+      _nombreAlumno = await getNombreAlumno(numeroControl);
 
       await _storage.write(key: 'jwt_token', value: _token!);
       await _storage.write(
@@ -42,6 +45,19 @@ class AuthProvider extends ChangeNotifier {
       throw Exception('Autenticación fallida');
     }
   }
+
+  Future<String?> getNombreAlumno(String numeroControl) async {
+    final response = await http.get(Uri.parse(
+        'https://proyecto-agiles.onrender.com/alumnos/$numeroControl'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['Nombre'];
+    } else {
+      throw Exception('Error al obtener el nombre del alumno');
+    }
+  }
+
 
   Future<String?> cargarNumeroControl() async {
     return await _storage.read(key: 'numero_control');
@@ -92,7 +108,6 @@ class AuthProvider extends ChangeNotifier {
       print('Error en la solicitud: ${response.statusCode}, ${response.body}');
     }
   }
-
 
   // Método logout
   Future<void> logout() async {

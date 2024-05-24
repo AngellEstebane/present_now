@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:present_now/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'inicioalumnos/mis_archivos_screen.dart';
 import 'inicioalumnos/charlar_screen.dart';
@@ -218,6 +220,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Present Now'),
@@ -240,14 +243,14 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Nombre del Usuario',
+                    authProvider.nombreAlumno.toString(),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                     ),
                   ),
                   Text(
-                    'Correo Institucional',
+                    authProvider.numeroControl.toString(),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
