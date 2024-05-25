@@ -225,7 +225,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
     final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Present Now'),
+        title: const Text('Present Now'),
         backgroundColor: Colors.blue,
       ),
       drawer: Drawer(
@@ -239,16 +239,13 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: NetworkImage('URL_DE_TU_FOTO'),
-                  ),
-                  SizedBox(height: 10),
+                  
+                  SizedBox(height: 45),
                   Text(
                     authProvider.nombreAlumno.toString(),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 10,
                     ),
                   ),
                   Text(
@@ -344,7 +341,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                   Text(currentTime),
                 ],
               ),
-              SizedBox(height: 10.0),
+              SizedBox(height: 5.0),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
@@ -356,9 +353,9 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                     children: [
                       Text(
                         'Recordatorios de Materias',
-                        style: TextStyle(fontSize: 20.0),
+                        style: TextStyle(fontSize: 15.0),
                       ),
-                      SizedBox(height: 5.0),
+                      SizedBox(height: 2.0),
                       for (var i = 0; i < materias.length; i++)
                         ListTile(
                           title: Text(
