@@ -24,3 +24,14 @@ class PasswordVisibilityToggle extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+class PasswordValidator {
+  // Expresión regular para validar la contraseña
+  static final RegExp regex = RegExp(
+    r'^(?=.*[A-Z])(?=.*[!@#\$^&*~()_+\[\]{}|;:\",.<>?/])(?=.*[0-9])(?=.*[a-z]).{8,}$',
+  );
+
+  static bool isValid(String password) {
+    return regex.hasMatch(password);
+  }
+}

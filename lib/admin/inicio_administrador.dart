@@ -101,6 +101,11 @@ class _CrearAlumnoState extends State<CrearAlumno> {
       return;
     }
 
+    if (!PasswordValidator.isValid(contrasena)) {
+      _showDialog('La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');
+      return;
+    }
+
     var alumno = {
       "numeroControl": numeroControl,
       "nombre": nombre,
@@ -272,6 +277,11 @@ class _CrearMaestroState extends State<CrearMaestro> {
         departamentoId.isEmpty ||
         contrasena.isEmpty) {
       _showDialog('Por favor, completa todos los campos.');
+      return;
+    }
+
+    if (!PasswordValidator.isValid(contrasena)) {
+      _showDialog('La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');
       return;
     }
 
