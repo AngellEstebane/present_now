@@ -64,6 +64,17 @@ class _CrearAlumnoState extends State<CrearAlumno> {
   final TextEditingController roleIdController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
 
+  String? carreraSeleccionada;
+
+  final List<String> carreras = [
+    'Sistemas',
+    'Electromecánica',
+    'Gestión',
+    'Industrial',
+    'Renovables',
+    'Civil'
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -73,7 +84,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
   void _crearAlumno() async {
     String numeroControl = numeroControlController.text.trim();
     String nombre = nombreController.text.trim();
-    String carrera = carreraController.text.trim();
+    String carrera = carreraSeleccionada ?? '';
     String contrasena = contrasenaController.text.trim();
 
     if (numeroControl.isEmpty ||
@@ -160,9 +171,20 @@ class _CrearAlumnoState extends State<CrearAlumno> {
               controller: nombreController,
               decoration: InputDecoration(labelText: 'Nombre'),
             ),
-            TextField(
-              controller: carreraController,
+            DropdownButtonFormField<String>(
+              value: carreraSeleccionada,
               decoration: InputDecoration(labelText: 'Carrera'),
+              items: carreras.map((String carrera) {
+                return DropdownMenuItem<String>(
+                  value: carrera,
+                  child: Text(carrera),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  carreraSeleccionada = newValue;
+                });
+              },
             ),
             TextField(
               controller: roleIdController,
