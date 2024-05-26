@@ -183,7 +183,8 @@ class _CrearAlumnoState extends State<CrearAlumno> {
                 decoration:
                     const InputDecoration(labelText: 'Número de Control'),
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')), //Evitar espacios
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
                   UpperCaseTextInputFormatter(),
                 ],
               ),
@@ -357,7 +358,8 @@ class _CrearMaestroState extends State<CrearMaestro> {
                 controller: rfcController,
                 decoration: const InputDecoration(labelText: 'RFC'),
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')), //Evitar espacios
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
                   UpperCaseTextInputFormatter(),
                 ],
               ),
