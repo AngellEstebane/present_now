@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:present_now/inicio_alumnos.dart';
 import 'package:present_now/inicio_maestros.dart';
+import 'package:present_now/inicioalumnos/materias_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -15,16 +16,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  //Ver pass
+  // Ver pass
   bool _obscureText = true;
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
   }
-  //Ver pass
+  // Ver pass
 
-//saber si es alumno o maestro segun rfc o nc ingresado
+  // Saber si es alumno o maestro según RFC o número de control ingresado
   Future<void> _login() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
@@ -48,14 +49,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (id.startsWith('C') && id.length == 9 || id.length == 8) {
-      // Si el ID comienza con 'C' y tiene 9 caracteres o solo son numeros y son 8 caracteres, asumimos que es un número de control válido
+      // Si el ID comienza con 'C' y tiene 9 caracteres o solo son números y son 8 caracteres, asumimos que es un número de control válido
       try {
         await authProvider.autenticarAlumno(id, password);
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => InicioAlumnos(),
+            builder: (context) => InicioAlumnos(), // Navega a AsistenciasScreen
           ),
         );
       } catch (e) {
@@ -63,8 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(content: Text('Error de inicio de sesión: $e')),
         );
       }
-    } //else if (RegExp(r'^[A-Z]{4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
-      else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
+    } else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
       // Si el ID tiene el formato de RFC válido y tiene 13 caracteres, asumimos que es un RFC de maestro
       try {
         await authProvider.autenticarMaestro(id, password);
@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: _idController,
               decoration:
-                  InputDecoration(labelText: 'ID (NumeroControl o RFC)'),
+                  InputDecoration(labelText: 'ID (Número de Control o RFC)'),
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 UpperCaseTextInputFormatter(),

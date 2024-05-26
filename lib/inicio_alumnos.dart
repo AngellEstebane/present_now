@@ -14,7 +14,12 @@ import 'inicioalumnos/cerrar_sesion_screen.dart';
 import 'package:geolocator/geolocator.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AuthProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -56,14 +61,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
     "01:00 PM"
   ]; // Horas personalizadas para cada materia
 
-  List<String> materias = [
-    "Materia 1",
-    "Materia 2",
-    "Materia 3",
-    "Materia 4",
-    "Materia 5",
-    "Materia 6"
-  ];
+  List<String> materias = [];
   bool showAttendance = false;
   bool daySaved = false;
   bool attendanceButtonDisabled =
@@ -239,7 +237,6 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
                   SizedBox(height: 45),
                   Text(
                     authProvider.nombreAlumno.toString(),
@@ -252,14 +249,23 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                     authProvider.numeroControl.toString(),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 10,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'present.now.2023@gmail.com',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
             ListTile(
-              title: Text('Mis archivos'),
+              leading: Icon(Icons.folder),
+              title: Text('Mis Archivos'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -268,6 +274,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               },
             ),
             ListTile(
+              leading: Icon(Icons.chat),
               title: Text('Charlar'),
               onTap: () {
                 Navigator.push(
@@ -277,16 +284,18 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               },
             ),
             ListTile(
-              title: Text('Materias'),
+              leading: Icon(Icons.book),
+              title: Text('Asistencias'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MateriasScreen()),
+                  MaterialPageRoute(builder: (context) => AsitenciasScreen()),
                 );
               },
             ),
             ListTile(
-              title: Text('Avisos recientes'),
+              leading: Icon(Icons.announcement),
+              title: Text('Avisos'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -295,7 +304,8 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               },
             ),
             ListTile(
-              title: Text('Modo desconectado'),
+              leading: Icon(Icons.wifi_off),
+              title: Text('Desconectado'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -304,6 +314,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               },
             ),
             ListTile(
+              leading: Icon(Icons.description),
               title: Text('Justificantes'),
               onTap: () {
                 Navigator.push(
@@ -314,9 +325,11 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               },
             ),
             ListTile(
-              title: Text('Cerrar sesión'),
-              onTap: () {
-                Navigator.push(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('Cerrar Sesión'),
+              onTap: () async {
+                await authProvider.logout();
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => CerrarSesionScreen()),
                 );
@@ -325,217 +338,68 @@ class _InicioAlumnosState extends State<InicioAlumnos>
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    currentDate,
-                    style: TextStyle(fontSize: 20.0),
-                  ),
-                  Spacer(),
-                  Text(currentTime),
-                ],
-              ),
-              SizedBox(height: 5.0),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Recordatorios de Materias',
-                        style: TextStyle(fontSize: 15.0),
-                      ),
-                      SizedBox(height: 2.0),
-                      for (var i = 0; i < materias.length; i++)
-                        ListTile(
-                          title: Text(
-                            '${materias[i]}: ${materiaTimes[i]}', // Mostrar la hora personalizada para cada materia
-                            style: TextStyle(
-                              color: materiaColors[i], // Color de la materia
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 10.0),
-              if (currentMateriaIndex >= 0 && showAttendance)
-                Container(
-                  color: currentMateriaIndex < materias.length
-                      ? materiaColors[currentMateriaIndex]
-                      : Colors.grey,
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    currentMateriaIndex < materias.length
-                        ? materias[currentMateriaIndex]
-                        : 'Todavía no ha comenzado el día',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              SizedBox(height: 10.0),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      if (attendanceButtonDisabled) return;
-
-                      if (showAttendance) {
-                        // Si ya se ha registrado la asistencia, cambiar el color de la materia a azul
-                        setState(() {
-                          materiaColors[currentMateriaIndex] = Colors.blue;
-                          showAttendance = false;
-                        });
-                      } else {
-                        // Código existente para registrar la asistencia
-                        if (!showAttendance) {
-                          // Calcular el progreso y actualizar los colores de las materias
-                          calculateProgress();
-
-                          // Verificar el intervalo de tiempo y actualizar los colores de las materias
-                          if (DateTime.now().minute <= 15 &&
-                              currentMateriaIndex >= 0) {
-                            // Cambiar el color de la barra y el recuadro de la materia a verde
-                            setState(() {
-                              materiaColors[currentMateriaIndex] = Colors.green;
-                              showAttendance = true;
-                            });
-                            // Mostrar mensaje de éxito en el registro de asistencia con retraso de 2 segundos
-                            Future.delayed(Duration(seconds: 2), () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      Text('Éxito en registrar asistencia'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            });
-                          } else if (DateTime.now().minute > 15 &&
-                              DateTime.now().minute <= 20 &&
-                              currentMateriaIndex >= 0) {
-                            // Cambiar el color de la barra y el recuadro de la materia a amarillo
-                            setState(() {
-                              materiaColors[currentMateriaIndex] =
-                                  Colors.yellow;
-                              showAttendance = true;
-                            });
-                            // Mostrar mensaje de asistencia registrada con retraso de 2 segundos
-                            Future.delayed(Duration(seconds: 2), () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      Text('Asistencia registrada con retraso'),
-                                  backgroundColor: Colors.yellow,
-                                ),
-                              );
-                            });
-                          } else if (DateTime.now().minute > 20 &&
-                              currentMateriaIndex >= 0) {
-                            // Cambiar el color de la barra y el recuadro de la materia a rojo
-                            setState(() {
-                              materiaColors[currentMateriaIndex] = Colors.red;
-                              showAttendance = true;
-                            });
-                            // Mostrar mensaje de error en el registro de asistencia con retraso de 2 segundos
-                            Future.delayed(Duration(seconds: 2), () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      Text('Error al registrar asistencia'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            });
-                          }
-
-                          // Desactivar el botón de asistencia después de hacer clic
-                          setState(() {
-                            attendanceButtonDisabled = true;
-                          });
-                        }
-                      }
-                    },
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: showAttendance ? Colors.grey : Colors.blue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Asistencia',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  AnimatedBuilder(
-                    animation: progressController,
-                    builder: (context, child) {
-                      return SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          backgroundColor: Colors.grey[200],
-                          valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(height: 20.0),
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            currentDate,
+            style: TextStyle(fontSize: 24),
+          ),
+          SizedBox(height: 20),
+          Text(
+            currentTime,
+            style: TextStyle(fontSize: 48),
+          ),
+          SizedBox(height: 20),
+          materias.isNotEmpty && currentMateriaIndex >= 0
+              ? Column(
                   children: [
                     Text(
-                      'GPS',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      'Materia actual:',
+                      style: TextStyle(fontSize: 20),
                     ),
-                    SizedBox(height: 10),
                     Text(
-                      'Ubicación actual: $_currentLocation',
-                      style: TextStyle(fontSize: 16),
+                      materias[currentMateriaIndex],
+                      style:
+                          TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed:
-                          _getLocation, // Llamar a la función para obtener la ubicación
-                      child: Text('Actualizar Ubicación'),
+                    SizedBox(height: 20),
+                    LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(barColor),
                     ),
                   ],
+                )
+              : Text(
+                  'Fuera del horario de clases',
+                  style: TextStyle(fontSize: 20),
                 ),
-              ),
-            ],
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: attendanceButtonDisabled
+                ? null
+                : () {
+                    _getLocation();
+                    setState(() {
+                      attendanceButtonDisabled = true;
+                      showAttendance = true;
+                      // Guardar asistencia
+                      saveAttendance(false, true);
+                    });
+                  },
+            child: Text('Registrar Asistencia'),
           ),
-        ),
+          SizedBox(height: 20),
+          Text(
+            'Ubicación actual:',
+            style: TextStyle(fontSize: 16),
+          ),
+          Text(
+            _currentLocation,
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
       ),
     );
   }
