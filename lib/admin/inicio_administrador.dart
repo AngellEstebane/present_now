@@ -39,7 +39,7 @@ class InicioAdministrador extends StatelessWidget {
               },
               child: const Text('Crear Alumno'),
             ),
-            const SizedBox(height: 20),            
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -69,6 +69,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
   final TextEditingController roleIdController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
 
+  bool _isLoading = false;
   String? carreraSeleccionada;
 
   final List<String> carreras = [
@@ -87,6 +88,10 @@ class _CrearAlumnoState extends State<CrearAlumno> {
   }
 
   void _crearAlumno() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     String numeroControl = numeroControlController.text.trim();
     String nombre = nombreController.text.trim();
     String carrera = carreraSeleccionada ?? '';
@@ -98,16 +103,26 @@ class _CrearAlumnoState extends State<CrearAlumno> {
         contrasena.isEmpty ||
         roleIdController.text.isEmpty) {
       _showDialog('Por favor, completa todos los campos.');
+      setState(() {
+        _isLoading = false;
+      });
       return;
-    }     
+    }
 
-    if(!NumerControlValidator.isValid(numeroControl)){
+    if (!NumerControlValidator.isValid(numeroControl)) {
       _showDialog('Número de control inválido');
+      setState(() {
+        _isLoading = false;
+      });
       return;
-    }   
+    }
 
     if (!PasswordValidator.isValid(contrasena)) {
-      _showDialog('La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');
+      _showDialog(
+          'La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -121,6 +136,9 @@ class _CrearAlumnoState extends State<CrearAlumno> {
 
     if (alumno['roleId'] == -1) {
       _showDialog('Por favor, ingresa un valor válido para roleId.');
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -142,6 +160,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
       carreraController.clear();
       contrasenaController.clear();
       carreraSeleccionada = null;
+      _isLoading = false;
     });
   }
 
@@ -164,6 +183,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
       },
     );
   }
+
   //2222visual
   @override
   Widget build(BuildContext context) {
@@ -188,8 +208,10 @@ class _CrearAlumnoState extends State<CrearAlumno> {
                 decoration:
                     const InputDecoration(labelText: 'Número de Control'),
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')), //Evitar espacios
-                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
+                  FilteringTextInputFormatter.deny(
+                      RegExp(r'\s')), //Evitar espacios
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
                   UpperCaseTextInputFormatter(),
                 ],
               ),
@@ -239,8 +261,11 @@ class _CrearAlumnoState extends State<CrearAlumno> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _crearAlumno,
-                child: const Text('Crear Alumno'),
+                onPressed: _isLoading ? null : _crearAlumno,
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Crear alumno'),
+                //child: const Text('Crear Alumno'),
               ),
             ],
           ),
@@ -264,6 +289,7 @@ class _CrearMaestroState extends State<CrearMaestro> {
       TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
 
+  bool _isLoading = false;
   String? departamentoSeleccionado;
 
   final List<String> carreras = [
@@ -273,6 +299,10 @@ class _CrearMaestroState extends State<CrearMaestro> {
   ];
 
   void _crearMaestro() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     String rfc = rfcController.text.trim();
     String nombre = nombreController.text.trim();
     String departamentoId = departamentoSeleccionado ?? '';
@@ -283,16 +313,26 @@ class _CrearMaestroState extends State<CrearMaestro> {
         departamentoId.isEmpty ||
         contrasena.isEmpty) {
       _showDialog('Por favor, completa todos los campos.');
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
-    if(!RFCValidator.isValid(rfc)){
+    if (!RFCValidator.isValid(rfc)) {
       _showDialog('RFC inválido');
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
     if (!PasswordValidator.isValid(contrasena)) {
-      _showDialog('La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');
+      _showDialog(
+          'La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -322,6 +362,7 @@ class _CrearMaestroState extends State<CrearMaestro> {
       departamentoIdController.clear();
       contrasenaController.clear();
       departamentoSeleccionado = null;
+      _isLoading = false;
     });
   }
 
@@ -368,8 +409,10 @@ class _CrearMaestroState extends State<CrearMaestro> {
                 controller: rfcController,
                 decoration: const InputDecoration(labelText: 'RFC'),
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')), //Evitar espacios
-                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
+                  FilteringTextInputFormatter.deny(
+                      RegExp(r'\s')), //Evitar espacios
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
                   UpperCaseTextInputFormatter(),
                 ],
               ),
@@ -418,8 +461,10 @@ class _CrearMaestroState extends State<CrearMaestro> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _crearMaestro,
-                child: const Text('Crear Maestro'),
+                onPressed: _isLoading ? null : _crearMaestro,
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Crear maestro'),
               ),
             ],
           ),
