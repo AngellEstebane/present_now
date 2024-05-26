@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:present_now/admin/filtros.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -149,60 +153,81 @@ class _CrearAlumnoState extends State<CrearAlumno> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Crear Alumno'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Crear Alumno',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: numeroControlController,
-              decoration: InputDecoration(labelText: 'Número de Control'),
-            ),
-            TextField(
-              controller: nombreController,
-              decoration: InputDecoration(labelText: 'Nombre'),
-            ),
-            DropdownButtonFormField<String>(
-              value: carreraSeleccionada,
-              decoration: InputDecoration(labelText: 'Carrera'),
-              items: carreras.map((String carrera) {
-                return DropdownMenuItem<String>(
-                  value: carrera,
-                  child: Text(carrera),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  carreraSeleccionada = newValue;
-                });
-              },
-            ),
-            TextField(
-              controller: roleIdController,
-              decoration: InputDecoration(labelText: 'Role ID'),
-              keyboardType: TextInputType.number,
-              enabled: false,
-            ),
-            TextField(
-              controller: contrasenaController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _crearAlumno,
-              child: Text('Crear Alumno'),
-            ),
-          ],
+    return ChangeNotifierProvider(
+      create: (_) => PasswordVisibilityToggle(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Crear Alumno'),
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Crear Alumno',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: numeroControlController,
+                decoration: const InputDecoration(labelText: 'Número de Control'),
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  UpperCaseTextInputFormatter(),
+                ],
+              ),
+              TextField(
+                controller: nombreController,
+                decoration: const InputDecoration(labelText: 'Nombre'),
+              ),
+              DropdownButtonFormField<String>(
+                value: carreraSeleccionada,
+                decoration: const InputDecoration(labelText: 'Carrera'),
+                items: carreras.map((String carrera) {
+                  return DropdownMenuItem<String>(
+                    value: carrera,
+                    child: Text(carrera),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    carreraSeleccionada = newValue;
+                  });
+                },
+              ),
+              TextField(
+                controller: roleIdController,
+                decoration: const InputDecoration(labelText: 'Role ID'),
+                keyboardType: TextInputType.number,
+                enabled: false,
+              ),
+              Consumer<PasswordVisibilityToggle>(
+                builder: (context, passwordVisibility, child) {
+                  return TextField(
+                    controller: contrasenaController,
+                    decoration: InputDecoration(
+                        labelText: 'Contraseña',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            passwordVisibility.obscureText
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed:
+                              passwordVisibility.togglePasswordVisibility,
+                        )),
+                    obscureText: passwordVisibility.obscureText,
+                  );
+                },
+              ),
+              const SizedBox(height: 20),              
+              ElevatedButton(
+                onPressed: _crearAlumno,
+                child: const Text('Crear Alumno'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -283,49 +308,70 @@ class _CrearMaestroState extends State<CrearMaestro> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Crear Maestro'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Crear Maestro',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: rfcController,
-              decoration: InputDecoration(labelText: 'RFC'),
-            ),
-            TextField(
-              controller: nombreController,
-              decoration: InputDecoration(labelText: 'Nombre'),
-            ),
-            TextField(
-              controller: departamentoIdController,
-              decoration: InputDecoration(labelText: 'Departamento ID'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: contrasenaController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
-              obscureText: true,
-            ),
-            TextField(
-              controller: TextEditingController(text: '2'),
-              decoration: InputDecoration(labelText: 'Role ID'),
-              enabled: false,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _crearMaestro,
-              child: Text('Crear Maestro'),
-            ),
-          ],
+    return ChangeNotifierProvider(
+      create: (_) => PasswordVisibilityToggle(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Crear Maestro'),
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Crear Maestro',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: rfcController,
+                decoration: InputDecoration(labelText: 'RFC'),
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  UpperCaseTextInputFormatter(),
+                ],
+              ),
+              TextField(
+                controller: nombreController,
+                decoration: InputDecoration(labelText: 'Nombre'),
+              ),
+              TextField(
+                controller: departamentoIdController,
+                decoration: InputDecoration(labelText: 'Departamento ID'),
+                keyboardType: TextInputType.number,
+              ),
+              Consumer<PasswordVisibilityToggle>(
+                builder: (context, passwordVisibility, child) {
+                  return TextField(
+                    controller: contrasenaController,
+                    decoration: InputDecoration(
+                        labelText: 'Contraseña',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            passwordVisibility.obscureText
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed:
+                              passwordVisibility.togglePasswordVisibility,
+                        )),
+                    obscureText: passwordVisibility.obscureText,
+                  );
+                },
+              ),
+              TextField(
+                controller: TextEditingController(text: '2'),
+                decoration: InputDecoration(labelText: 'Role ID'),
+                enabled: false,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _crearMaestro,
+                child: Text('Crear Maestro'),
+              ),
+            ],
+          ),
         ),
       ),
     );
