@@ -24,7 +24,7 @@ class InicioAdministrador extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Inicio Administrador'),
+        title: const Text('Inicio Administrador'),
       ),
       body: Center(
         child: Column(
@@ -37,9 +37,9 @@ class InicioAdministrador extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => CrearAlumno()),
                 );
               },
-              child: Text('Crear Alumno'),
+              child: const Text('Crear Alumno'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),            
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -47,7 +47,7 @@ class InicioAdministrador extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => CrearMaestro()),
                 );
               },
-              child: Text('Crear Maestro'),
+              child: const Text('Crear Maestro'),
             ),
           ],
         ),
@@ -56,6 +56,7 @@ class InicioAdministrador extends StatelessWidget {
   }
 }
 
+//2222
 class CrearAlumno extends StatefulWidget {
   @override
   _CrearAlumnoState createState() => _CrearAlumnoState();
@@ -125,10 +126,13 @@ class _CrearAlumnoState extends State<CrearAlumno> {
       _showDialog('Error al crear el alumno.');
     }
 
-    numeroControlController.clear();
-    nombreController.clear();
-    carreraController.clear();
-    contrasenaController.clear();
+    setState(() {
+      numeroControlController.clear();
+      nombreController.clear();
+      carreraController.clear();
+      contrasenaController.clear();
+      carreraSeleccionada = null;
+    });
   }
 
   void _showDialog(String message) {
@@ -136,11 +140,11 @@ class _CrearAlumnoState extends State<CrearAlumno> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Resultado"),
+          title: const Text("Resultado"),
           content: Text(message),
           actions: <Widget>[
             ElevatedButton(
-              child: Text("OK"),
+              child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -150,17 +154,17 @@ class _CrearAlumnoState extends State<CrearAlumno> {
       },
     );
   }
-
+  //2222visual
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PasswordVisibilityToggle(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Crear Alumno'),
+          title: const Text('Crear Alumno'),
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -171,7 +175,8 @@ class _CrearAlumnoState extends State<CrearAlumno> {
               const SizedBox(height: 20),
               TextField(
                 controller: numeroControlController,
-                decoration: const InputDecoration(labelText: 'Número de Control'),
+                decoration:
+                    const InputDecoration(labelText: 'Número de Control'),
                 inputFormatters: [
                   FilteringTextInputFormatter.deny(RegExp(r'\s')),
                   UpperCaseTextInputFormatter(),
@@ -221,7 +226,7 @@ class _CrearAlumnoState extends State<CrearAlumno> {
                   );
                 },
               ),
-              const SizedBox(height: 20),              
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _crearAlumno,
                 child: const Text('Crear Alumno'),
@@ -233,6 +238,8 @@ class _CrearAlumnoState extends State<CrearAlumno> {
     );
   }
 }
+
+//2424
 
 class CrearMaestro extends StatefulWidget {
   @override
@@ -246,10 +253,18 @@ class _CrearMaestroState extends State<CrearMaestro> {
       TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
 
+  String? departamentoSeleccionado;
+
+  final List<String> carreras = [
+    '1',
+    '2',
+    '3',
+  ];
+
   void _crearMaestro() async {
     String rfc = rfcController.text.trim();
     String nombre = nombreController.text.trim();
-    String departamentoId = departamentoIdController.text.trim();
+    String departamentoId = departamentoSeleccionado ?? '';
     String contrasena = contrasenaController.text.trim();
 
     if (rfc.isEmpty ||
@@ -280,10 +295,13 @@ class _CrearMaestroState extends State<CrearMaestro> {
       _showDialog('Error al crear el maestro.');
     }
 
-    rfcController.clear();
-    nombreController.clear();
-    departamentoIdController.clear();
-    contrasenaController.clear();
+    setState(() {
+      rfcController.clear();
+      nombreController.clear();
+      departamentoIdController.clear();
+      contrasenaController.clear();
+      departamentoSeleccionado = null;
+    });
   }
 
   void _showDialog(String message) {
@@ -291,11 +309,11 @@ class _CrearMaestroState extends State<CrearMaestro> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Resultado"),
+          title: const Text("Resultado"),
           content: Text(message),
           actions: <Widget>[
             ElevatedButton(
-              child: Text("OK"),
+              child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -306,27 +324,28 @@ class _CrearMaestroState extends State<CrearMaestro> {
     );
   }
 
+  //2424visual
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PasswordVisibilityToggle(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Crear Maestro'),
+          title: const Text('Crear Maestro'),
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Crear Maestro',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: rfcController,
-                decoration: InputDecoration(labelText: 'RFC'),
+                decoration: const InputDecoration(labelText: 'RFC'),
                 inputFormatters: [
                   FilteringTextInputFormatter.deny(RegExp(r'\s')),
                   UpperCaseTextInputFormatter(),
@@ -334,12 +353,22 @@ class _CrearMaestroState extends State<CrearMaestro> {
               ),
               TextField(
                 controller: nombreController,
-                decoration: InputDecoration(labelText: 'Nombre'),
+                decoration: const InputDecoration(labelText: 'Nombre'),
               ),
-              TextField(
-                controller: departamentoIdController,
-                decoration: InputDecoration(labelText: 'Departamento ID'),
-                keyboardType: TextInputType.number,
+              DropdownButtonFormField<String>(
+                value: departamentoSeleccionado,
+                decoration: const InputDecoration(labelText: 'Carrera'),
+                items: carreras.map((String carrera) {
+                  return DropdownMenuItem<String>(
+                    value: carrera,
+                    child: Text(carrera),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    departamentoSeleccionado = newValue;
+                  });
+                },
               ),
               Consumer<PasswordVisibilityToggle>(
                 builder: (context, passwordVisibility, child) {
@@ -362,13 +391,13 @@ class _CrearMaestroState extends State<CrearMaestro> {
               ),
               TextField(
                 controller: TextEditingController(text: '2'),
-                decoration: InputDecoration(labelText: 'Role ID'),
+                decoration: const InputDecoration(labelText: 'Role ID'),
                 enabled: false,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _crearMaestro,
-                child: Text('Crear Maestro'),
+                child: const Text('Crear Maestro'),
               ),
             ],
           ),
