@@ -101,6 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   InputDecoration(labelText: 'ID (Número de Control o RFC)'),
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
                 UpperCaseTextInputFormatter(),
               ],
             ),
