@@ -62,7 +62,8 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
       }
     }
 
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
 
     setState(() {
       _currentLocation = '${position.latitude}, ${position.longitude}';
@@ -109,8 +110,10 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                             style: TextStyle(fontSize: 20),
                           ),
                           Text(
-                            materiasActuales[currentMateriaIndex]['NombreMateria']!,
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                            materiasActuales[currentMateriaIndex]
+                                ['NombreMateria']!,
+                            style: TextStyle(
+                                fontSize: 28, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 20),
                           LinearProgressIndicator(
@@ -154,7 +157,8 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                       final materia = materiasActuales[index];
                       return ListTile(
                         title: Text(materia['NombreMateria']!),
-                        subtitle: Text('Clave: ${materia['ClaveMateria']}, Hora: ${materia['Hora']}'),
+                        subtitle: Text(
+                            'Clave: ${materia['ClaveMateria']}, Hora: ${materia['Hora']}'),
                       );
                     },
                   ),
@@ -167,7 +171,8 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
     );
   }
 
-  List<Map<String, String>> _filtrarMateriasPorHora(List<Map<String, String>> materias) {
+  List<Map<String, String>> _filtrarMateriasPorHora(
+      List<Map<String, String>> materias) {
     final ahora = TimeOfDay.now();
     final ahoraEnMinutos = ahora.hour * 60 + ahora.minute;
 
@@ -178,7 +183,8 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
       final minuto = int.parse(partes[1]);
       final horaEnMinutos = hora * 60 + minuto;
 
-      return horaEnMinutos <= ahoraEnMinutos && ahoraEnMinutos < horaEnMinutos + 60;
+      return horaEnMinutos <= ahoraEnMinutos &&
+          ahoraEnMinutos < horaEnMinutos + 60;
     }).toList();
   }
 

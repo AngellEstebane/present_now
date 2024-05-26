@@ -237,12 +237,12 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 10),
+                  SizedBox(height: 6),
                   Text(
                     '¡Bienvenido a Present Now!',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -263,7 +263,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'present.now.2023@gmail.com',
+                    '',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -305,7 +305,6 @@ class _InicioAlumnosState extends State<InicioAlumnos>
           ],
         ),
       ),
-     
     );
   }
 }
