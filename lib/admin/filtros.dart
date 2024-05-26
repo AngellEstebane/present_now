@@ -35,3 +35,11 @@ class PasswordValidator {
     return regex.hasMatch(password);
   }
 }
+
+class RFCValidator {
+  static final RegExp regex = RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$');
+
+  static bool isValid(String rfc) {
+    return regex.hasMatch(rfc) && rfc.length <= 13;
+  }
+}
