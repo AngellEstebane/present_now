@@ -237,19 +237,28 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 45),
+                  SizedBox(height: 10),
+                  Text(
+                    '¡Bienvenido a Present Now!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   Text(
                     authProvider.nombreAlumno.toString(),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                   ),
                   Text(
                     authProvider.numeroControl.toString(),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -264,52 +273,12 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               ),
             ),
             ListTile(
-              leading: Icon(Icons.folder),
-              title: Text('Mis Archivos'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MisArchivosScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.chat),
-              title: Text('Charlar'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CharlarScreen()),
-                );
-              },
-            ),
-            ListTile(
               leading: Icon(Icons.book),
               title: Text('Asistencias'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AsitenciasScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.announcement),
-              title: Text('Avisos'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AvisosScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.wifi_off),
-              title: Text('Desconectado'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DesconectadoScreen()),
                 );
               },
             ),
@@ -336,69 +305,7 @@ class _InicioAlumnosState extends State<InicioAlumnos>
           ],
         ),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            currentDate,
-            style: TextStyle(fontSize: 24),
-          ),
-          SizedBox(height: 20),
-          Text(
-            currentTime,
-            style: TextStyle(fontSize: 48),
-          ),
-          SizedBox(height: 20),
-          materias.isNotEmpty && currentMateriaIndex >= 0
-              ? Column(
-                  children: [
-                    Text(
-                      'Materia actual:',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    Text(
-                      materias[currentMateriaIndex],
-                      style:
-                          TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 20),
-                    LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                    ),
-                  ],
-                )
-              : Text(
-                  'Fuera del horario de clases',
-                  style: TextStyle(fontSize: 20),
-                ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: attendanceButtonDisabled
-                ? null
-                : () {
-                    _getLocation();
-                    setState(() {
-                      attendanceButtonDisabled = true;
-                      showAttendance = true;
-                      // Guardar asistencia
-                      saveAttendance(false, true);
-                    });
-                  },
-            child: Text('Registrar Asistencia'),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Ubicación actual:',
-            style: TextStyle(fontSize: 16),
-          ),
-          Text(
-            _currentLocation,
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
+     
     );
   }
 }
