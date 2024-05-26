@@ -329,12 +329,44 @@ class _InicioMaestrosState extends State<InicioMaestros>
               },
             ),
             ListTile(
-              title: Text('Cerrar sesión'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CerrarSesionScreen()),
-                );
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.redAccent,
+              ),
+              title: const Text('Cerrar sesión', style: TextStyle(color: Colors.redAccent),),
+              onTap: () async {
+                bool? confirmLogout = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Confirmación'),
+                        content:
+                            const Text('¿Seguro que quieres cerrar sesión?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false); //Cancelar
+                            },
+                            child: const Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true); //Confirmar
+                            },
+                            child: const Text('Cerrar sesión'),
+                          )
+                        ],
+                      );
+                    });
+                if (confirmLogout == true) {
+                  // Obtener instancia de AuthProvider y llamar al método logout
+                  await Provider.of<AuthProvider>(context, listen: false)
+                      .logout();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    'login',
+                    (Route<dynamic> route) => false,
+                  );
+                }
               },
             ),
           ],

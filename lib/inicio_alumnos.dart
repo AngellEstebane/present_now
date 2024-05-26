@@ -325,11 +325,9 @@ class _InicioAlumnosState extends State<InicioAlumnos>
               },
             ),
             ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('Cerrar Sesión'),
-              onTap: () async {
-                await authProvider.logout();
-                Navigator.pushReplacement(
+              title: Text('Cerrar sesión'),
+              onTap: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => CerrarSesionScreen()),
                 );
