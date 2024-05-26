@@ -99,7 +99,12 @@ class _CrearAlumnoState extends State<CrearAlumno> {
         roleIdController.text.isEmpty) {
       _showDialog('Por favor, completa todos los campos.');
       return;
-    }    
+    }     
+
+    if(!NumerControlValidator.isValid(numeroControl)){
+      _showDialog('Número de control inválido');
+      return;
+    }   
 
     if (!PasswordValidator.isValid(contrasena)) {
       _showDialog('La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, un carácter especial y un número.');

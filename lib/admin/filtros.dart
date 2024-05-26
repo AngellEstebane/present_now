@@ -43,3 +43,9 @@ class RFCValidator {
     return regex.hasMatch(rfc) && rfc.length <= 13;
   }
 }
+
+class NumerControlValidator {
+  static bool isValid(String id){
+    return id.startsWith('C') && id.length == 9 || id.length == 8;
+  }  
+}
