@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:present_now/admin/inicio_administrador.dart';
 import 'package:present_now/inicio_alumnos.dart';
 import 'package:present_now/inicio_maestros.dart';
 import 'package:present_now/inicioalumnos/materias_screen.dart';
@@ -52,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
       // Si el ID comienza con 'C' y tiene 9 caracteres o solo son números y son 8 caracteres, asumimos que es un número de control válido
       try {
         await authProvider.autenticarAlumno(id, password);
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -64,11 +64,11 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(content: Text('Error de inicio de sesión: $e')),
         );
       }
-    } else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) && id.length <= 13) {
+    } else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) &&
+        id.length <= 13) {
       // Si el ID tiene el formato de RFC válido y tiene 13 caracteres, asumimos que es un RFC de maestro
       try {
         await authProvider.autenticarMaestro(id, password);
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -80,9 +80,25 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(content: Text('Error de inicio de sesión: $e')),
         );
       }
+    } else if (id.length == 1) {
+      // Validar credencial de administrador (número de longitud 1)
+      try {
+        await authProvider.autenticarAdministrador(id, password);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                InicioAdministrador(), // Navega a la pantalla de inicio de administradores
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error de inicio de sesión: $e')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Número de control o RFC inválido')),
+        SnackBar(content: Text('Número de control, RFC o credencial inválido')),
       );
     }
   }
@@ -97,11 +113,12 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             TextField(
               controller: _idController,
-              decoration:
-                  InputDecoration(labelText: 'ID (Número de Control o RFC)'),
+              decoration: InputDecoration(
+                  labelText: 'ID (Número de Control, RFC o Credencial)'),
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')), //Sólo letras y números
+                FilteringTextInputFormatter.allow(
+                    RegExp(r'[A-Za-z0-9]')), // Sólo letras y números
                 UpperCaseTextInputFormatter(),
               ],
             ),

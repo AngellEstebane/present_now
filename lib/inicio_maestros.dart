@@ -99,56 +99,7 @@ class _InicioMaestrosState extends State<InicioMaestros>
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.folder),
-              title: const Text('Mis archivos'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MisArchivosScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat),
-              title: const Text('Charlar'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CharlarScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Materias'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MateriasScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.announcement),
-              title: const Text('Avisos recientes'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AvisosScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.wifi_off),
-              title: const Text('Modo desconectado'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DesconectadoScreen()),
-                );
-              },
-            ),
+           
             ListTile(
               leading: const Icon(Icons.description),
               title: const Text('Justificantes'),

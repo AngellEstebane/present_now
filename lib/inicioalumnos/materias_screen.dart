@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:present_now/providers/auth_provider.dart';
@@ -137,7 +139,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                             attendanceButtonDisabled = true;
                           });
                           // Guardar asistencia
-                          saveAttendance(false, true);
+                          saveAttendance(authProvider.numeroControl!, true);
                         },
                   child: Text('Registrar Asistencia'),
                 ),
@@ -188,8 +190,36 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
     }).toList();
   }
 
-  void saveAttendance(bool isLate, bool isPresent) async {
-    // Implement your logic to save attendance here
-    print('Asistencia guardada: $isPresent');
+  void saveAttendance(String numeroControl, bool presente) async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await http.post(
+        Uri.parse('https://proyecto-agiles.onrender.com/asistencias'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${authProvider.token}',
+        },
+        body: jsonEncode({
+          'numeroControl': numeroControl,
+          'presente': true,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Asistencia registrada correctamente')),
+        );
+      } else {
+        throw Exception('Error al registrar la asistencia');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        attendanceButtonDisabled = false;
+      });
+    }
   }
 }
