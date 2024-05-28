@@ -1,23 +1,24 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.present_now">
 
     <!-- Permiso para ubicación precisa -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:label="present_now"
-        android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">        
+        android:name="androidx.multidex.MultiDexApplication"
+        android:icon="@mipmap/ic_launcher">
 
         <!-- nuevo -->
 
-    <receiver
-        android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
-        android:exported="true"> <!-- Add this attribute -->
-        <intent-filter>
-            <action android:name="android.intent.action.BOOT_COMPLETED" />
-        </intent-filter>
-    </receiver>
-    
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+            android:exported="true"> <!-- Add this attribute -->
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

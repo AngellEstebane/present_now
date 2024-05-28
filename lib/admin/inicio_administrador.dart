@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:present_now/admin/filtros.dart';
+import 'package:present_now/admin/reportes_maestros.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -48,6 +49,17 @@ class InicioAdministrador extends StatelessWidget {
                 );
               },
               child: const Text('Crear Maestro'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ReportesScreenMaestros()),
+                );
+              },
+              child: const Text('Reportes asistencia maestros'),
             ),
           ],
         ),
