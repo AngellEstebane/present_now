@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -191,6 +191,10 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
   }
 
   void saveAttendance(String numeroControl, bool presente) async {
+    setState(() {
+      attendanceButtonDisabled = true; // Bloquea el botón cuando se inicia el proceso
+    });
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final response = await http.post(
@@ -209,6 +213,38 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Asistencia registrada correctamente')),
         );
+
+        // Calcula el tiempo restante hasta que la asistencia deba cambiar a false
+        final DateTime now = DateTime.now();
+        final DateTime fifteenMinutesLater = now.add(Duration(minutes: 15));
+        final Duration timeUntilFalse = fifteenMinutesLater.difference(now);
+
+        // Si la asistencia se registró correctamente, crear un Timer que cambie el valor de presente a false después del tiempo calculado
+        Timer(timeUntilFalse, () async {
+          final response = await http.post(
+            Uri.parse('https://proyecto-agiles.onrender.com/asistencias'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${authProvider.token}',
+            },
+            body: jsonEncode({
+              'numeroControl': numeroControl,
+              'presente': false,
+            }),
+          );
+
+          if (response.statusCode == 201) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Asistencia cambiada a false después de 15 minutos')),
+            );
+
+            setState(() {
+              attendanceButtonDisabled = true; // Bloquea el botón después de 15 minutos
+            });
+          } else {
+            throw Exception('Error al cambiar la asistencia a false');
+          }
+        });
       } else {
         throw Exception('Error al registrar la asistencia');
       }
@@ -218,7 +254,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
       );
     } finally {
       setState(() {
-        attendanceButtonDisabled = false;
+        attendanceButtonDisabled = false; // Habilita el botón de nuevo si hay un error
       });
     }
   }
