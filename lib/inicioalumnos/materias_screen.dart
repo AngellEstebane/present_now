@@ -67,7 +67,19 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
     setState(() {
       currentTime = DateFormat('hh:mm a').format(DateTime.now());
       currentDate = DateFormat('EEEE dd/MM/yyyy').format(DateTime.now());
+      checkButtonStatus();
     });
+  }
+
+  void checkButtonStatus() {
+    DateTime now = DateTime.now();
+    int minutes = now.minute;
+
+    if (minutes >= 0 && minutes < 15) {
+      attendanceButtonDisabled = false;
+    } else {
+      attendanceButtonDisabled = true;
+    }
   }
 
   void calculateProgress() {
