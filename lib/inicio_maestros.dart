@@ -4,13 +4,8 @@ import 'package:present_now/iniciomaestros/asistencia_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'iniciomaestros/avisos_screen.dart';
 import 'iniciomaestros/busqueda_screen.dart';
-import 'iniciomaestros/charlar_screen.dart';
-import 'iniciomaestros/desconectado_screen.dart';
 import 'iniciomaestros/justificantes_screen.dart';
-import 'iniciomaestros/materias_screen.dart'; // Importar la pantalla de MateriasScreen
-import 'iniciomaestros/mis_archivos_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -98,56 +93,7 @@ class _InicioMaestrosState extends State<InicioMaestros>
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.folder),
-              title: const Text('Mis archivos'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MisArchivosScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat),
-              title: const Text('Charlar'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CharlarScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Materias'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MateriasScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.announcement),
-              title: const Text('Avisos recientes'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AvisosScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.wifi_off),
-              title: const Text('Modo desconectado'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DesconectadoScreen()),
-                );
-              },
-            ),
+           
             ListTile(
               leading: const Icon(Icons.description),
               title: const Text('Justificantes'),

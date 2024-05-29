@@ -20,7 +20,8 @@ class AuthProvider extends ChangeNotifier {
   String? get nombreAlumno => _nombreAlumno;
   String? get nombreProfesor => _nombreProfesor;
   String? get rfc => _rfc;
-  String? get credencial => _credencial; // Getter para la credencial del administrador
+  String? get credencial =>
+      _credencial; // Getter para la credencial del administrador
   List<Map<String, String>> get materias => _materias;
 
   final _storage = FlutterSecureStorage();
@@ -54,8 +55,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<String?> getNombreAlumno(String numeroControl) async {
-    final response = await http.get(
-        Uri.parse('https://proyecto-agiles.onrender.com/alumnos/$numeroControl'));
+    final response = await http.get(Uri.parse(
+        'https://proyecto-agiles.onrender.com/alumnos/$numeroControl'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -92,9 +93,31 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> getNombreProfesor(String rfc) async {
+  Future<List<Map<String, String>>> getMateriasProfesor(String rfc) async {
     final response = await http.get(
-        Uri.parse('https://proyecto-agiles.onrender.com/profesores/$rfc'));
+      Uri.parse(
+          'https://proyecto-agiles.onrender.com/profesor/materias/aulas?rfc=$rfc'),
+      headers: {'Authorization': 'Bearer $_token'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data
+          .map((materia) => {
+                'NombreMateria': materia['NombreMateria'].toString(),
+                'NombreGrupo': materia['NombreGrupo'].toString(),
+                'Hora': materia['Hora'].toString(),
+                'AulaNombre': materia['AulaNombre'].toString(),
+              })
+          .toList();
+    } else {
+      throw Exception('Error al obtener las materias del profesor');
+    }
+  }
+
+  Future<String?> getNombreProfesor(String rfc) async {
+    final response = await http
+        .get(Uri.parse('https://proyecto-agiles.onrender.com/profesores/$rfc'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -104,7 +127,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> autenticarAdministrador(String credencial, String password) async {
+  Future<void> autenticarAdministrador(
+      String credencial, String password) async {
     final response = await http.post(
       Uri.parse('https://proyecto-agiles.onrender.com/login/admin'),
       headers: {'Content-Type': 'application/json'},
@@ -120,7 +144,6 @@ class AuthProvider extends ChangeNotifier {
       _role = 'administrador';
       _credencial = credencial;
 
-
       await _storage.write(key: 'jwt_token', value: _token!);
       await _storage.write(key: 'credencial', value: _credencial!);
 
@@ -130,12 +153,9 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  
-
   Future<String?> cargarToken() async {
     return await _storage.read(key: 'jwt_token');
   }
-
 
   Future<void> cargarMateriasAlumno() async {
     if (_numeroControl == null) return;
@@ -143,9 +163,7 @@ class AuthProvider extends ChangeNotifier {
     final response = await http.get(
       Uri.parse(
           'https://proyecto-agiles.onrender.com/materias/alumno?numero_control=$_numeroControl'),
-      headers: {
-        'Authorization': 'Bearer $_token'
-      },
+      headers: {'Authorization': 'Bearer $_token'},
     );
 
     if (response.statusCode == 200) {

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:present_now/providers/auth_provider.dart';
@@ -18,12 +20,40 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
   Color barColor = Colors.blue;
   bool attendanceButtonDisabled = false;
   String _currentLocation = 'Coordenadas no disponibles';
+  Timer? inasistenciaTimer;
+  Position? _currentPosition;
+  bool isInAllowedArea = false;
+
+  final List<LatLng> _polygonPoints = [
+    LatLng(28.215556, -105.432318),
+    LatLng(28.215112, -105.432241),
+    LatLng(28.214746, -105.432252),
+    LatLng(28.214544, -105.432224),
+    LatLng(28.213443, -105.432067),
+    LatLng(28.213204, -105.432057),
+    LatLng(28.212978, -105.431324),
+    LatLng(28.213166, -105.430732),
+    LatLng(28.213889, -105.430821),
+    LatLng(28.214418, -105.431016),
+    LatLng(28.215172, -105.431157),
+    LatLng(28.215533, -105.431010),
+    LatLng(28.215782, -105.431076),
+    LatLng(28.216106, -105.431134),
+    LatLng(28.215762, -105.432147),
+  ];
+
+  void _showFaltaMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Tienes una falta')),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     updateDateTime();
     calculateProgress();
+    _getLocation();
 
     Timer.periodic(Duration(minutes: 1), (timer) {
       setState(() {
@@ -42,10 +72,10 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
 
   void calculateProgress() {
     int currentMinute = DateTime.now().minute;
-    progress = currentMinute / 60.0;
+    progress = currentMinute / 15.0;
   }
 
-  void _getLocation() async {
+  Future<void> _getLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       bool serviceStatus = await Geolocator.openLocationSettings();
@@ -66,8 +96,46 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
         desiredAccuracy: LocationAccuracy.high);
 
     setState(() {
+      _currentPosition = position;
       _currentLocation = '${position.latitude}, ${position.longitude}';
+      isInAllowedArea = _isPointInPolygon(
+        LatLng(position.latitude, position.longitude),
+        _polygonPoints,
+      );
     });
+  }
+
+  bool _isPointInPolygon(LatLng point, List<LatLng> polygon) {
+    int intersectCount = 0;
+    for (int j = 0; j < polygon.length; j++) {
+      int i = j - 1;
+      if (i < 0) {
+        i = polygon.length - 1;
+      }
+
+      if (_rayCastIntersect(point, polygon[i], polygon[j])) {
+        intersectCount++;
+      }
+    }
+    return ((intersectCount % 2) == 1); // odd = inside, even = outside;
+  }
+
+  bool _rayCastIntersect(LatLng point, LatLng vertA, LatLng vertB) {
+    double aY = vertA.latitude;
+    double bY = vertB.latitude;
+    double aX = vertA.longitude;
+    double bX = vertB.longitude;
+    double pY = point.latitude;
+    double pX = point.longitude;
+
+    if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
+      return false;
+    }
+    double m = (aY - bY) / (aX - bX);
+    double bee = (-aX) * m + aY;
+    double x = (pY - bee) / m;
+
+    return x > pX;
   }
 
   @override
@@ -88,6 +156,24 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
           } else {
             final materias = authProvider.materias;
             final materiasActuales = _filtrarMateriasPorHora(materias);
+
+            // Cancelar cualquier temporizador de inasistencia existente
+            if (inasistenciaTimer != null) {
+              inasistenciaTimer!.cancel();
+            }
+
+            // Configurar temporizador para inasistencia automática
+            if (materiasActuales.isNotEmpty) {
+              inasistenciaTimer = Timer(Duration(minutes: 2), () {
+                if (!attendanceButtonDisabled) {
+                  registerAbsence(authProvider.numeroControl!);
+                  _showFaltaMessage();
+                  setState(() {
+                    attendanceButtonDisabled = true;
+                  });
+                }
+              });
+            }
 
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -129,17 +215,16 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                       ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: attendanceButtonDisabled
+                  onPressed: attendanceButtonDisabled || !isInAllowedArea
                       ? null
-                      : () {
-                          _getLocation();
+                      : () async {
                           setState(() {
                             attendanceButtonDisabled = true;
                           });
-                          // Guardar asistencia
-                          saveAttendance(false, true);
+                          //Guardar asistencia
+                          saveAttendance(authProvider.numeroControl!, true);
                         },
-                  child: Text('Registrar Asistencia'),
+                  child: const Text('Registrar Asistencia'),
                 ),
                 SizedBox(height: 20),
                 Text(
@@ -188,8 +273,114 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
     }).toList();
   }
 
-  void saveAttendance(bool isLate, bool isPresent) async {
-    // Implement your logic to save attendance here
-    print('Asistencia guardada: $isPresent');
+  void saveAttendance(String numeroControl, bool presente) async {
+    setState(() {
+      attendanceButtonDisabled =
+          true; // Bloquea el botón cuando se inicia el proceso
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await http.post(
+        Uri.parse('https://proyecto-agiles.onrender.com/asistencias'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${authProvider.token}',
+        },
+        body: jsonEncode({
+          'numeroControl': numeroControl,
+          'presente': presente,
+          'ubicacion': _currentLocation,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Asistencia registrada correctamente')),
+        );
+
+        // Calcula el tiempo restante hasta que la asistencia deba cambiar a false
+        final DateTime now = DateTime.now();
+        final DateTime fifteenMinutesLater = now.add(Duration(minutes: 15));
+        final Duration timeUntilFalse = fifteenMinutesLater.difference(now);
+
+        // Si la asistencia se registró correctamente, crear un Timer que cambie el valor de presente a false después del tiempo calculado
+        Timer(timeUntilFalse, () async {
+          final response = await http.post(
+            Uri.parse('https://proyecto-agiles.onrender.com/asistencias'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${authProvider.token}',
+            },
+            body: jsonEncode({
+              'numeroControl': numeroControl,
+              'presente': false,
+            }),
+          );
+
+          if (response.statusCode == 201) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Asistencia cambiada a false después de 15 minutos')),
+            );
+
+            setState(() {
+              attendanceButtonDisabled =
+                  true; // Bloquea el botón después de 15 minutos
+            });
+          } else {
+            throw Exception('Error al cambiar la asistencia a false');
+          }
+        });
+      } else {
+        throw Exception('Error al registrar la asistencia');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        attendanceButtonDisabled =
+            false; // Habilita el botón de nuevo si hay un error
+      });
+    }
   }
+
+  void registerAbsence(String numeroControl) async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await http.post(
+        Uri.parse('https://proyecto-agiles.onrender.com/asistencias'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${authProvider.token}',
+        },
+        body: jsonEncode({
+          'numeroControl': numeroControl,
+          'presente': false,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Inasistencia registrada correctamente')),
+        );
+      } else {
+        throw Exception('Error al registrar la inasistencia');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    }
+  }
+}
+
+class LatLng {
+  final double latitude;
+  final double longitude;
+
+  LatLng(this.latitude, this.longitude);
 }

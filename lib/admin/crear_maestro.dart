@@ -172,7 +172,7 @@ class _CrearMaestroState extends State<CrearMaestro> {
               DropdownButtonFormField<String>(
                 value: departamentoSeleccionado,
                 decoration: InputDecoration(
-                  labelText: 'Carrera',
+                  labelText: 'Departamentos',
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue),
                   ),
