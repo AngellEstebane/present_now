@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:present_now/admin/inicio_administrador.dart';
 import 'package:present_now/inicio_alumnos.dart';
 import 'package:present_now/inicio_maestros.dart';
-import 'package:present_now/inicioalumnos/materias_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
