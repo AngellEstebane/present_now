@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:present_now/admin/inicio_administrador.dart';
 import 'package:present_now/inicio_alumnos.dart';
 import 'package:present_now/inicio_maestros.dart';
-import 'package:present_now/inicioalumnos/materias_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -106,7 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Iniciar Sesión')),
+      appBar: AppBar(
+        title: Text('Iniciar Sesión'),
+        backgroundColor: Colors.blue[800], // University blue
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -114,7 +116,16 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: _idController,
               decoration: InputDecoration(
-                  labelText: 'ID (Número de Control, RFC o Credencial)'),
+                labelText: 'ID (Número de Control, RFC o Credencial)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 FilteringTextInputFormatter.allow(
@@ -122,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 UpperCaseTextInputFormatter(),
               ],
             ),
+            SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -132,12 +144,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   onPressed: _togglePasswordVisibility,
                 ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                ),
               ),
               obscureText: _obscureText,
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _login,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue[800],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: Text('Iniciar Sesión'),
             ),
           ],

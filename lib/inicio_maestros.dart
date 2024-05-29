@@ -4,13 +4,8 @@ import 'package:present_now/iniciomaestros/asistencia_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'iniciomaestros/avisos_screen.dart';
 import 'iniciomaestros/busqueda_screen.dart';
-import 'iniciomaestros/charlar_screen.dart';
-import 'iniciomaestros/desconectado_screen.dart';
 import 'iniciomaestros/justificantes_screen.dart';
-import 'iniciomaestros/materias_screen.dart'; // Importar la pantalla de MateriasScreen
-import 'iniciomaestros/mis_archivos_screen.dart';
 
 void main() {
   runApp(MyApp());
