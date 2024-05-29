@@ -14,9 +14,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Ver pass
+  bool _isLoading = false;
   bool _obscureText = true;
+
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
@@ -26,6 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Saber si es alumno o maestro según RFC o número de control ingresado
   Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     final id = _idController.text.trim();
@@ -35,6 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, completa todos los campos')),
       );
+
+      setState(() {
+        _isLoading = false;
+      });
+
       return;
     }
 
@@ -44,6 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
             content: Text(
                 'El número de control o RFC no puede tener más de 13 caracteres')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -99,6 +111,10 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text('Número de control, RFC o credencial inválido')),
       );
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -132,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 UpperCaseTextInputFormatter(),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -154,18 +170,20 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               obscureText: _obscureText,
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue[800],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text('Iniciar Sesión'),
-            ),
+            const SizedBox(height: 20),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _login,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue[800],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Iniciar Sesión'),
+                  ),
           ],
         ),
       ),
