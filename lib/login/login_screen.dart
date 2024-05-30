@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:present_now/admin/inicio_administrador.dart';
 import 'package:present_now/inicio_alumnos.dart';
 import 'package:present_now/inicio_maestros.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-
-import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -15,9 +14,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Ver pass
+  bool _isLoading = false;
   bool _obscureText = true;
+
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
@@ -27,6 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Saber si es alumno o maestro según RFC o número de control ingresado
   Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     final id = _idController.text.trim();
@@ -36,6 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, completa todos los campos')),
       );
+
+      setState(() {
+        _isLoading = false;
+      });
+
       return;
     }
 
@@ -45,6 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
             content: Text(
                 'El número de control o RFC no puede tener más de 13 caracteres')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -100,6 +111,10 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text('Número de control, RFC o credencial inválido')),
       );
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -109,65 +124,69 @@ class _LoginScreenState extends State<LoginScreen> {
         title: Text('Iniciar Sesión'),
         backgroundColor: Colors.blue[800], // University blue
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _idController,
-              decoration: InputDecoration(
-                labelText: 'ID (Número de Control, RFC o Credencial)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                FilteringTextInputFormatter.allow(
-                    RegExp(r'[A-Za-z0-9]')), // Sólo letras y números
-                UpperCaseTextInputFormatter(),
-              ],
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Contraseña',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility : Icons.visibility_off,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _idController,
+                decoration: InputDecoration(
+                  labelText: 'ID (Número de Control, RFC o Credencial)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
                   ),
-                  onPressed: _togglePasswordVisibility,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'[A-Za-z0-9]')), // Sólo letras y números
+                  UpperCaseTextInputFormatter(),
+                ],
               ),
-              obscureText: _obscureText,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue[800],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Contraseña',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: _togglePasswordVisibility,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
                 ),
+                obscureText: _obscureText,
               ),
-              child: Text('Iniciar Sesión'),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue[800],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Iniciar Sesión'),
+                    ),
+            ],
+          ),
         ),
       ),
     );
