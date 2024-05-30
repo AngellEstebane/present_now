@@ -156,7 +156,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Materias Actuales'),
+        title: const Text('Materias Actuales'),
       ),
       body: FutureBuilder(
         future: authProvider.cargarMateriasAlumno(),
@@ -192,28 +192,28 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
               children: [
                 Text(
                   currentDate,
-                  style: TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 24),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   currentTime,
-                  style: TextStyle(fontSize: 48),
+                  style: const TextStyle(fontSize: 48),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 materiasActuales.isNotEmpty && currentMateriaIndex >= 0
                     ? Column(
                         children: [
-                          Text(
+                          const Text(
                             'Materia actual:',
                             style: TextStyle(fontSize: 20),
                           ),
                           Text(
                             materiasActuales[currentMateriaIndex]
                                 ['NombreMateria']!,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 28, fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           LinearProgressIndicator(
                             value: progress,
                             backgroundColor: Colors.grey[200],
@@ -221,33 +221,18 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                           ),
                         ],
                       )
-                    : Text(
+                    : const Text(
                         'Fuera del horario de clases',
                         style: TextStyle(fontSize: 20),
                       ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: attendanceButtonDisabled || !isInAllowedArea
-                      ? null
-                      : () async {
-                          setState(() {
-                            attendanceButtonDisabled = true;
-                          });
-                          //Guardar asistencia
-                          saveAttendance(authProvider.numeroControl!, true);
-                        },
-                  child: Text(isInAllowedArea
-                      ? 'Registrar Asistencia'
-                      : "Fuera del área permitida"),
-                ),
-                SizedBox(height: 20),
-                Text(
+                const SizedBox(height: 20),
+                const Text(
                   'Ubicación actual:',
                   style: TextStyle(fontSize: 16),
                 ),
                 Text(
                   _currentLocation,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -258,6 +243,22 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                         title: Text(materia['NombreMateria']!),
                         subtitle: Text(
                             'Clave: ${materia['ClaveMateria']}, Hora: ${materia['Hora']}'),
+                        trailing: ElevatedButton(
+                          onPressed:
+                              attendanceButtonDisabled || !isInAllowedArea
+                                  ? null
+                                  : () async {
+                                      setState(() {
+                                        attendanceButtonDisabled = true;
+                                      });
+                                      //Guardar asistencia
+                                      saveAttendance(
+                                          authProvider.numeroControl!, true);
+                                    },
+                          child: Text(isInAllowedArea
+                              ? 'Registrar Asistencia'
+                              : "Fuera del área permitida"),
+                        ),
                       );
                     },
                   ),
