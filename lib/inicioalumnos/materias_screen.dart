@@ -244,7 +244,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
 
         // Calcula el tiempo restante hasta que la asistencia deba cambiar a false
         final DateTime now = DateTime.now();
-        final DateTime fifteenMinutesLater = now.add(Duration(minutes: 15));
+        final DateTime fifteenMinutesLater = now.add(Duration(minutes: 2));
         final Duration timeUntilFalse = fifteenMinutesLater.difference(now);
 
         // Si la asistencia se registró correctamente, crear un Timer que cambie el valor de presente a false después del tiempo calculado
