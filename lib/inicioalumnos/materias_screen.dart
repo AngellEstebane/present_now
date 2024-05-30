@@ -246,6 +246,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                         trailing: ElevatedButton(
                           onPressed:
                               attendanceButtonDisabled || !isInAllowedArea
+                              //attendanceButtonDisabled
                                   ? null
                                   : () async {
                                       setState(() {
@@ -253,11 +254,12 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                                       });
                                       //Guardar asistencia
                                       saveAttendance(
-                                          authProvider.numeroControl!, true);
+                                          authProvider.numeroControl!,
+                                          true,
+                                          materia['ClaveMateria']!);
                                     },
-                          child: Text(isInAllowedArea
-                              ? 'Registrar Asistencia'
-                              : "Fuera del área permitida"),
+                          child: Text(isInAllowedArea ? 'Registrar Asistencia' : "Fuera del área permitida"),
+                          //child: const Text('Registrar asistencia'),
                         ),
                       );
                     },
@@ -288,7 +290,8 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
     }).toList();
   }
 
-  void saveAttendance(String numeroControl, bool presente) async {
+  void saveAttendance(
+      String numeroControl, bool presente, String idMateria) async {
     setState(() {
       attendanceButtonDisabled =
           true; // Bloquea el botón cuando se inicia el proceso
@@ -305,6 +308,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
         body: jsonEncode({
           'numeroControl': numeroControl,
           'presente': presente,
+          'id_materia': idMateria,
           'ubicacion': _currentLocation,
         }),
       );
@@ -312,7 +316,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Asistencia registrada correctamente')),
-        );
+        );        
 
         // Calcula el tiempo restante hasta que la asistencia deba cambiar a false
         final DateTime now = DateTime.now();
@@ -329,6 +333,7 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
             },
             body: jsonEncode({
               'numeroControl': numeroControl,
+              'id_materia': idMateria,
               'presente': false,
             }),
           );
