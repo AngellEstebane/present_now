@@ -236,7 +236,9 @@ class _AsitenciasScreenState extends State<AsitenciasScreen> {
                           //Guardar asistencia
                           saveAttendance(authProvider.numeroControl!, true);
                         },
-                  child: const Text('Registrar Asistencia'),
+                  child: Text(isInAllowedArea
+                      ? 'Registrar Asistencia'
+                      : "Fuera del área permitida"),
                 ),
                 SizedBox(height: 20),
                 Text(
