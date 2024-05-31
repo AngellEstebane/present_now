@@ -6,39 +6,39 @@ import 'package:present_now/iniciomaestros/save_and_open_pdf.dart';
 import 'package:present_now/iniciomaestros/simple_pdf_api.dart';
 
 class Subject {
-  final String rfc;
-  final String profesorNombre;
-  final String nombreGrupo;
-  final String nombreMateria;
-  final String aulaNombre;
-  final String hora;
+  final int IdGrupo;
+  final String Id_Materia;
+  final String Hora;
+  final String Aula;
+  final String RfcDocente;
+  final String NombreGrupo;
 
   Subject({
-    required this.rfc,
-    required this.profesorNombre,
-    required this.nombreGrupo,
-    required this.nombreMateria,
-    required this.aulaNombre,
-    required this.hora,
+    required this.IdGrupo,
+    required this.Id_Materia,
+    required this.Hora,
+    required this.Aula,
+    required this.RfcDocente,
+    required this.NombreGrupo,
   });
 
   factory Subject.fromJson(Map<String, dynamic> json) {
     return Subject(
-      rfc: json['RFC'],
-      profesorNombre: json['ProfesorNombre'],
-      nombreGrupo: json['NombreGrupo'],
-      nombreMateria: json['NombreMateria'],
-      aulaNombre: json['AulaNombre'],
-      hora: json['Hora'],
+      IdGrupo: json['IdGrupo'],
+      Id_Materia: json['Id_Materia'],
+      Hora: json['Hora'],
+      Aula: json['Aula'],
+      RfcDocente: json['RfcDocente'],
+      NombreGrupo: json['NombreGrupo'],
     );
   }
 }
 
 class Asistencia {
-  final String id;
+  final int id;
   final String alumnoId;
   final String fecha;
-  final String presente;
+  final int presente;
   final String materiaId;
   final String fechaConHora;
 
@@ -73,7 +73,7 @@ class ReportesScreen extends StatefulWidget {
 
 class _ReportesScreenState extends State<ReportesScreen> {
   List<Subject> _subjects = [];
-  List<Asistencia> _asistencias = []; // Define the _subjects variable here
+  List<Asistencia> _asistencias = [];
 
   @override
   void initState() {
@@ -83,15 +83,16 @@ class _ReportesScreenState extends State<ReportesScreen> {
 
   Future<void> _fetchSubjects(String rfc) async {
     final response = await http.get(Uri.parse(
-        'https://proyecto-agiles.onrender.com/profesor/materias/aulas?rfc=$rfc'));
+        'https://proyecto-agiles.onrender.com/grupo?RfcDocente=$rfc'));
 
     if (response.statusCode == 200) {
       final jsonBody = json.decode(response.body);
       final List<Subject> subjects = (jsonBody as List)
+          .where((subjectJson) => subjectJson['RfcDocente'] == rfc)
           .map((subjectJson) => Subject.fromJson(subjectJson))
           .toList();
       setState(() {
-        _subjects = subjects; // Assign the fetched data to _subjects
+        _subjects = subjects;
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -104,9 +105,9 @@ class _ReportesScreenState extends State<ReportesScreen> {
     }
   }
 
-  Future<void> _fetchAsist(String materiaID) async {
+  Future<void> _fetchAsist(Subject subject) async {
     final response = await http.get(Uri.parse(
-        'https://proyecto-agiles.onrender.com/asistencias/materias?materiaID$materiaID'));
+        'https://proyecto-agiles.onrender.com/asistencias/materia?materiaID=${subject.Id_Materia}'));
 
     if (response.statusCode == 200) {
       final jsonBody = json.decode(response.body);
@@ -114,8 +115,13 @@ class _ReportesScreenState extends State<ReportesScreen> {
           .map((asistJson) => Asistencia.fromJson(asistJson))
           .toList();
       setState(() {
-        _asistencias = asistencias; // Assign the fetched data to _subjects
+        _asistencias = asistencias;
       });
+
+      // Generate PDF with the fetched data
+      final simplePdfFile = await SimplePdfApi.generateSimpleTextPdf(
+          subject, subject.Id_Materia, _asistencias);
+      SaveAndOpenDocument.openPdf(simplePdfFile);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al cargar las asistencias')),
@@ -135,13 +141,10 @@ class _ReportesScreenState extends State<ReportesScreen> {
         itemBuilder: (context, index) {
           final subject = _subjects[index];
           return ListTile(
-            title: Text(subject.nombreMateria),
+            title: Text('Materia: ${subject.Id_Materia}'),
+            subtitle: Text('grupo: ${subject.NombreGrupo}'),
             onTap: () async {
-              // Handle on click here
-              //print('Subject ${subject.idMateria} clicked');
-              final simplePdfFile =
-                  await SimplePdfApi.generateSimpleTextPdf(subject);
-              SaveAndOpenDocument.openPdf(simplePdfFile);
+              await _fetchAsist(subject);
             },
           );
         },
