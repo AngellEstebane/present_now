@@ -138,7 +138,10 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
             final materias = authProvider.materias;
+            print("Materias recibidas: $materias"); // Depuración de materias
             final materiasActuales = _filtrarMateriasPorHora(materias);
+
+            print("Materias filtradas: $materiasActuales"); // Depuración de materias actuales
 
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -245,6 +248,8 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
       List<Map<String, String>> materias) {
     final ahora = TimeOfDay.now();
     final ahoraEnMinutos = ahora.hour * 60 + ahora.minute;
+
+    print("Hora actual: $ahora"); // Depuración de hora actual
 
     return materias.where((materia) {
       final horaInicio = materia['Hora']!;
