@@ -161,72 +161,122 @@ class _ReportesScreenMaestrosState extends State<ReportesScreenMaestros> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reportes de Maestros'),
+        backgroundColor: Color.fromARGB(255, 24, 81, 180),
+        title: Text(
+          'Reportes de Maestros',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Buscar por nombre',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color.fromARGB(255, 24, 81, 180), Color(0xFFE1F5FF)],
+          ),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar por nombre',
+                    prefixIcon: Icon(Icons.search,
+                        color: Color.fromARGB(255, 35, 34, 34)),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<int>(
-              value: _selectedDeptId,
-              hint: Text('Selecciona un departamento'),
-              isExpanded: true,
-              items: [
-                DropdownMenuItem(
-                  value: -1,
-                  child: Text('Todos los Departamentos'),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
-                DropdownMenuItem(
-                  value: 1,
-                  child: Text('Sistemas'),
-                ),
-                DropdownMenuItem(
-                  value: 2,
-                  child: Text('Electromecánica'),
-                ),
-                DropdownMenuItem(
-                  value: 3,
-                  child: Text('Industrial'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedDeptId = value;
-                });
-                _filterMaestros();
-              },
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _filteredMaestros.length,
-              itemBuilder: (context, index) {
-                final maestro = _filteredMaestros[index];
-                return ListTile(
-                  title: Text(maestro.profesorNombre),
-                  subtitle: Text('RFC: ${maestro.rfc}'),
-                  onTap: () async {
-                    // Handle on click here
-                    await _fetchAsistenciaMaestros(maestro);
+                child: DropdownButton<int>(
+                  value: _selectedDeptId,
+                  hint: Text(
+                    'Selecciona un departamento',
+                    style: TextStyle(color: Color.fromARGB(255, 57, 42, 222)),
+                  ),
+                  isExpanded: true,
+                  dropdownColor: Color.fromARGB(255,24,81,180),
+                  iconEnabledColor: Color.fromARGB(255, 71, 22, 169),
+                  style: TextStyle(color: Colors.white),
+                  items: [
+                    DropdownMenuItem(
+                      value: -1,
+                      child: Text('Todos los Departamentos',
+                          style: TextStyle(color: Color.fromARGB(255, 500, 224, 224))),
+                    ),
+                    DropdownMenuItem(
+                      value: 1,
+                      child: Text('Sistemas',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    DropdownMenuItem(
+                      value: 2,
+                      child: Text('Electromecánica',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    DropdownMenuItem(
+                      value: 3,
+                      child: Text('Industrial',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedDeptId = value;
+                    });
+                    _filterMaestros();
                   },
-                );
-              },
+                ),
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: ListView.builder(
+                itemCount: _filteredMaestros.length,
+                itemBuilder: (context, index) {
+                  final maestro = _filteredMaestros[index];
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    elevation: 5.0,
+                    child: ListTile(
+                      tileColor: Colors.white,
+                      title: Text(
+                        maestro.profesorNombre,
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      subtitle: Text(
+                        'RFC: ${maestro.rfc}',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onTap: () async {
+                        // Handle on click here
+                        await _fetchAsistenciaMaestros(maestro);
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
