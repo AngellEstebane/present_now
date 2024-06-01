@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:present_now/iniciomaestros/asistencia_entrada_salida.dart';
 import 'package:present_now/iniciomaestros/asistencia_screen.dart';
+import 'package:present_now/iniciomaestros/reportes_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -66,7 +67,7 @@ class _InicioMaestrosState extends State<InicioMaestros>
                     radius: 30,
                     backgroundImage: NetworkImage('URL_DE_TU_FOTO'),
                   ),
-                  const SizedBox(height: 10),                  
+                  const SizedBox(height: 10),
                   Text(
                     authProvider.nombreProfesor.toString(),
                     style: const TextStyle(
@@ -90,11 +91,11 @@ class _InicioMaestrosState extends State<InicioMaestros>
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AsistenciaEntradaSalida()),
+                  MaterialPageRoute(
+                      builder: (context) => AsistenciaEntradaSalida()),
                 );
               },
             ),
-           
             ListTile(
               leading: const Icon(Icons.description),
               title: const Text('Justificantes'),
@@ -103,6 +104,18 @@ class _InicioMaestrosState extends State<InicioMaestros>
                   context,
                   MaterialPageRoute(
                       builder: (context) => JustificantesScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.description),
+              title: const Text('Reportes'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ReportesScreen(rfc: authProvider.rfc ?? '')),
                 );
               },
             ),
