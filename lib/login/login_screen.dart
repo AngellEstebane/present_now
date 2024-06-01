@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:present_now/admin/inicio_administrador.dart';
@@ -53,15 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
             content: Text(
                 'El número de control o RFC no puede tener más de 13 caracteres')),
       );
+
       setState(() {
         _isLoading = false;
       });
       return;
     }
+    try {
+      if (id.startsWith('C') && id.length == 9 || id.length == 8) {
+        // Si el ID comienza con 'C' y tiene 9 caracteres o solo son números y son 8 caracteres, asumimos que es un número de control válido
 
-    if (id.startsWith('C') && id.length == 9 || id.length == 8) {
-      // Si el ID comienza con 'C' y tiene 9 caracteres o solo son números y son 8 caracteres, asumimos que es un número de control válido
-      try {
         await authProvider.autenticarAlumno(id, password);
         Navigator.pushReplacement(
           context,
@@ -69,15 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (context) => InicioAlumnos(), // Navega a AsistenciasScreen
           ),
         );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error de inicio de sesión: $e')),
-        );
-      }
-    } else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) &&
-        id.length <= 13) {
-      // Si el ID tiene el formato de RFC válido y tiene 13 caracteres, asumimos que es un RFC de maestro
-      try {
+      } else if (RegExp(r'^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}$').hasMatch(id) &&
+          id.length <= 13) {
+        // Si el ID tiene el formato de RFC válido y tiene 13 caracteres, asumimos que es un RFC de maestro
         await authProvider.autenticarMaestro(id, password);
         Navigator.pushReplacement(
           context,
@@ -85,14 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (context) => InicioMaestros(),
           ),
         );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error de inicio de sesión: $e')),
-        );
-      }
-    } else if (id.length == 1) {
-      // Validar credencial de administrador (número de longitud 1)
-      try {
+      } else if (id.length == 1) {
+        // Validar credencial de administrador (número de longitud 1)
         await authProvider.autenticarAdministrador(id, password);
         Navigator.pushReplacement(
           context,
@@ -101,17 +92,41 @@ class _LoginScreenState extends State<LoginScreen> {
                 InicioAdministrador(), // Navega a la pantalla de inicio de administradores
           ),
         );
-      } catch (e) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error de inicio de sesión: $e')),
+          SnackBar(
+              content: Text('Número de control, RFC o credencial inválido')),
         );
       }
-    } else {
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Número de control, RFC o credencial inválido')),
+        SnackBar(
+          content: Text(
+              'No se puede conectar al servidor. Verifique su conexión a Internet.'),
+        ),
       );
+    } on HttpException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Error de inicio de sesión: No se pudo conectar con el servidor.'),
+        ),
+      );
+    } on FormatException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error de formato en la respuesta del servidor.'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de inicio de sesión.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-
     setState(() {
       _isLoading = false;
     });
