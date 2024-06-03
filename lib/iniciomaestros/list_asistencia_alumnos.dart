@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:present_now/admin/models/asistencia_alumno_model.dart';
+import 'package:present_now/iniciomaestros/models/asistencia_alumno_model.dart';
 
 class ListAsistenciaAlumnos extends StatefulWidget {
   @override
