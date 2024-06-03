@@ -130,7 +130,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
         title: const Text('Asistencia Entrada y Salida'),
       ),
       body: FutureBuilder(
-        future: authProvider.cargarMateriasAlumno(),
+        future: authProvider.cargarMateriasProfesor(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -200,7 +200,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
                                       });
                                       // Guardar asistencia de entrada
                                       saveAttendance(
-                                          authProvider.numeroControl!,
+                                          authProvider.rfc!,
                                           true,
                                           materia['ClaveMateria']!,
                                           'entrada');
@@ -218,7 +218,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
                                       });
                                       // Guardar asistencia de salida
                                       saveAttendance(
-                                          authProvider.numeroControl!,
+                                          authProvider.rfc!,
                                           true,
                                           materia['ClaveMateria']!,
                                           'salida');
@@ -259,7 +259,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
   }
 
   void saveAttendance(
-      String numeroControl, bool presente, String idMateria, String tipo) async {
+      String rfc, bool presente, String idMateria, String tipo) async {
     setState(() {
       attendanceButtonDisabled = true; // Bloquea el botón cuando se inicia el proceso
     });
@@ -273,7 +273,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
           'Authorization': 'Bearer ${authProvider.token}',
         },
         body: jsonEncode({
-          'numeroControl': numeroControl,
+          'rfc': rfc,
           'presente': presente,
           'id_materia': idMateria,
           'ubicacion': _currentLocation,

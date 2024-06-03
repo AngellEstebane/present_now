@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -20,8 +19,7 @@ class AuthProvider extends ChangeNotifier {
   String? get nombreAlumno => _nombreAlumno;
   String? get nombreProfesor => _nombreProfesor;
   String? get rfc => _rfc;
-  String? get credencial =>
-      _credencial; // Getter para la credencial del administrador
+  String? get credencial => _credencial;
   List<Map<String, String>> get materias => _materias;
 
   final _storage = FlutterSecureStorage();
@@ -81,37 +79,16 @@ class AuthProvider extends ChangeNotifier {
       _token = data['token'];
       _role = 'maestro';
       _rfc = rfc;
-
       _nombreProfesor = await getNombreProfesor(rfc);
 
       await _storage.write(key: 'jwt_token', value: _token!);
       await _storage.write(key: 'rfc', value: _rfc!);
 
+      await cargarMateriasProfesor();
+
       notifyListeners();
     } else {
       throw Exception('Autenticación fallida');
-    }
-  }
-
-  Future<List<Map<String, String>>> getMateriasProfesor(String rfc) async {
-    final response = await http.get(
-      Uri.parse(
-          'https://proyecto-agiles.onrender.com/profesor/materias/aulas?rfc=$rfc'),
-      headers: {'Authorization': 'Bearer $_token'},
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data
-          .map((materia) => {
-                'NombreMateria': materia['NombreMateria'].toString(),
-                'NombreGrupo': materia['NombreGrupo'].toString(),
-                'Hora': materia['Hora'].toString(),
-                'AulaNombre': materia['AulaNombre'].toString(),
-              })
-          .toList();
-    } else {
-      throw Exception('Error al obtener las materias del profesor');
     }
   }
 
@@ -180,6 +157,29 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> cargarMateriasProfesor() async {
+    if (_rfc == null) return;
+
+    final response = await http.get(
+      Uri.parse(
+          'https://proyecto-agiles.onrender.com/profesor/materias/aulas?rfc=$_rfc'),
+      headers: {'Authorization': 'Bearer $_token'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      _materias = data
+          .map((materia) => {
+                'ClaveMateria': materia['ClaveMateria'].toString(),
+                'NombreMateria': materia['NombreMateria'].toString(),
+                'Hora': materia['Hora'].toString(),
+              })
+          .toList();
+    } else {
+      throw Exception('Error al obtener las materias del profesor');
+    }
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
 
@@ -193,5 +193,26 @@ class AuthProvider extends ChangeNotifier {
     _materias = [];
 
     notifyListeners();
+  }
+
+  Future<List<Map<String, String>>> getMateriasProfesor(String rfc) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://proyecto-agiles.onrender.com/profesor/materias/aulas?rfc=$rfc'),
+      headers: {'Authorization': 'Bearer $_token'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data
+          .map((materia) => {
+                'ClaveMateria': materia['ClaveMateria'].toString(),
+                'NombreMateria': materia['NombreMateria'].toString(),
+                'Hora': materia['Hora'].toString(),
+              })
+          .toList();
+    } else {
+      throw Exception('Error al obtener las materias del profesor');
+    }
   }
 }
