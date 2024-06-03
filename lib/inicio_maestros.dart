@@ -5,7 +5,6 @@ import 'package:present_now/iniciomaestros/list_asistencia_alumnos.dart';
 import 'package:present_now/iniciomaestros/reportes_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-
 import 'iniciomaestros/busqueda_screen.dart';
 import 'iniciomaestros/justificantes_screen.dart';
 

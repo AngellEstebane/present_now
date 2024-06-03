@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:present_now/iniciomaestros/models/asistencia_alumno_model.dart';
+import 'dart:convert';
+import 'package:present_now/iniciomaestros/models/asistencia_alumno_model.dart'; // Asegúrate de tener la ruta correcta
 
 class ListAsistenciaAlumnos extends StatefulWidget {
   @override
@@ -14,6 +14,8 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
   DateTime? selectedDate;
   String? selectedMateriaId;
   TextEditingController dateController = TextEditingController();
+  TextEditingController numeroControlController = TextEditingController();
+  bool presente = true;
 
   @override
   void initState() {
@@ -49,59 +51,38 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
     }
   }
 
-  void _editPresente(AsistenciaAlumnoModel asistencia) async {
-    final newPresente = await showDialog<int>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Editar Presente"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text("Alumno ID: ${asistencia.alumnoId}"),
-              Text("Fecha: ${asistencia.fecha?.toIso8601String() ?? 'N/A'}"),
-              Text("Presente: ${asistencia.presente}"),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(1);
-                    },
-                    child: Text("Presente"),
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(0);
-                    },
-                    child: Text("Ausente"),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
+  Future<void> registrarAsistencia() async {
+    if (numeroControlController.text.isEmpty || selectedMateriaId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Seleccione un número de control y una clave de materia')),
+      );
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('https://proyecto-agiles.onrender.com/asistencias'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
       },
+      body: jsonEncode({
+        "numeroControl": numeroControlController.text,
+        "id_materia": selectedMateriaId,
+        "presente": presente ? 1 : 0,
+      }),
     );
 
-    if (newPresente != null) {
-      setState(() {
-        asistencia.presente = newPresente;
-      });
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
 
-      // Actualizar en el servidor
-      final response = await http.put(
-        Uri.parse('https://proyecto-agiles.onrender.com/asistencias/${asistencia.id}'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(asistencia.toJson()),
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Asistencia registrada correctamente')),
       );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update asistencia');
-      }
+      fetchAsistencias(); // Actualiza la lista de asistencias
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al registrar la asistencia')),
+      );
     }
   }
 
@@ -127,7 +108,7 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lista de Asistencias'),
+        title: const Text('Lista de Asistencias'),
       ),
       body: Column(
         children: [
@@ -140,14 +121,14 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
                   decoration: InputDecoration(
                     labelText: "Seleccionar Fecha",
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.calendar_today),
+                      icon: const Icon(Icons.calendar_today),
                       onPressed: () => _selectDate(context),
                     ),
                   ),
                   readOnly: true,
                 ),
                 DropdownButton<String>(
-                  hint: Text("Seleccionar Materia"),
+                  hint: const Text("Seleccionar Materia"),
                   value: selectedMateriaId,
                   onChanged: (String? newValue) {
                     setState(() {
@@ -161,12 +142,35 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
                     );
                   }).toList(),
                 ),
+                TextField(
+                  controller: numeroControlController,
+                  decoration: const InputDecoration(labelText: 'Número de Control'),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Text("Presente"),
+                    Switch(
+                      value: presente,
+                      onChanged: (bool value) {
+                        setState(() {
+                          presente = value;
+                        });
+                      },
+                    ),
+                    const Text("Ausente"),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: registrarAsistencia,
+                  child: const Text('Registrar Asistencia'),
+                ),
               ],
             ),
           ),
           Expanded(
             child: isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     itemCount: filteredAsistencias?.length ?? 0,
                     itemBuilder: (context, index) {
@@ -174,8 +178,7 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
                       return ListTile(
                         title: Text('Alumno ID: ${asistencia.alumnoId}'),
                         subtitle: Text(
-                            'Fecha: ${asistencia.fecha?.toIso8601String() ?? 'N/A'}\nPresente: ${asistencia.presente}'),
-                        onTap: () => _editPresente(asistencia),
+                            'Fecha: ${asistencia.fecha?.toIso8601String() ?? 'N/A'}\nPresente: ${asistencia.presente == 1 ? 'Sí' : 'No'}'),
                       );
                     },
                   ),
