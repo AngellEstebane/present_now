@@ -130,7 +130,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
         title: const Text('Asistencia Entrada y Salida'),
       ),
       body: FutureBuilder(
-        future: authProvider.cargarMateriasAlumno(),
+        future: authProvider.getMateriasProfesor(authProvider.rfc!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -200,7 +200,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
                                       });
                                       // Guardar asistencia de entrada
                                       saveAttendance(
-                                          authProvider.numeroControl!,
+                                          authProvider.rfc!,
                                           true,
                                           materia['ClaveMateria']!,
                                           'entrada');
@@ -218,7 +218,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
                                       });
                                       // Guardar asistencia de salida
                                       saveAttendance(
-                                          authProvider.numeroControl!,
+                                          authProvider.rfc!,
                                           true,
                                           materia['ClaveMateria']!,
                                           'salida');
