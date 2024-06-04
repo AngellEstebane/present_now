@@ -150,7 +150,7 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    const Text("Presente"),
+                    const Text("Ausente"),
                     Switch(
                       value: presente,
                       onChanged: (bool value) {
@@ -159,7 +159,7 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
                         });
                       },
                     ),
-                    const Text("Ausente"),
+                    const Text("Presente"),
                   ],
                 ),
                 ElevatedButton(
