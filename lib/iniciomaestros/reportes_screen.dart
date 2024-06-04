@@ -107,6 +107,9 @@ class _ReportesScreenState extends State<ReportesScreen> {
   }
 
   Future<void> _fetchAsist(Subject subject, String fecha) async {
+    setState(() {
+      _asistencias.clear();
+    });
     final response = await http.get(Uri.parse(
         'https://proyecto-agiles.onrender.com/asistencias/materia?materiaID=${subject.Id_Materia}'));
 
@@ -120,9 +123,15 @@ class _ReportesScreenState extends State<ReportesScreen> {
       });
 
       // Generate PDF with the fetched data
-      final simplePdfFile = await SimplePdfApi.generateSimpleTextPdf(
-          subject, subject.Id_Materia, _asistencias, fecha);
-      SaveAndOpenDocument.openPdf(simplePdfFile);
+      if (_asistencias.isNotEmpty) {
+        final simplePdfFile = await SimplePdfApi.generateSimpleTextPdf(
+            subject, subject.Id_Materia, _asistencias, fecha);
+        SaveAndOpenDocument.openPdf(simplePdfFile);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No hay asistencias en esta fecha.')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al cargar las asistencias')),
