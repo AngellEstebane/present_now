@@ -1,52 +1,43 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw; // Alias para el paquete pdf
-import 'package:collection/collection.dart';
-import 'package:present_now/admin/reportes_maestros.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:present_now/iniciomaestros/reportes_screen.dart';
 import 'save_and_open_pdf.dart';
 
 class SimplePdfApi {
-  static Future<File> generateSimpleTextPdf(
-      Subject materia, String materiaId, List<Asistencia> asistencias) async {
+  static Future<File> generateSimpleTextPdf(Subject materia, String materiaId,
+      List<Asistencia> asistencias, String fecha) async {
     final pdf = pw.Document();
 
-    pdf.addPage(pw.Page(
-      build: (_) => pw.Container(
-        decoration: pw.BoxDecoration(
-          border: pw.Border.all(width: 2, color: PdfColors.black),
-          borderRadius: pw.BorderRadius.circular(0),
-          color: PdfColors.white,
-        ),
-        padding: const pw.EdgeInsets.all(20),
-        child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.SizedBox(height: 20),
-            pw.Text(
-                'Materia: ${materia.Id_Materia}  Grupo: ${materia.NombreGrupo}  Hora ${materia.Hora}',
-                style: const pw.TextStyle(fontSize: 24)),
-            pw.SizedBox(height: 10),
-            pw.Text('Aula:${materia.Aula}',
-                style: const pw.TextStyle(fontSize: 24)),
-            pw.SizedBox(height: 20),
-          ],
-        ),
-      ),
-    ));
+    final imageData1 = await loadAsset('lib/assets/SEP.png');
+    final imageData2 = await loadAsset('lib/assets/TecDelicias.png');
+    final imageData3 = await loadAsset('lib/assets/TECNM.png');
+
+    // Obtener fecha inicial y final
+    final startDate = DateTime.parse(fecha);
+    final endDate = startDate.add(Duration(days: 5)); // 5 días después
+
+    // Obtener asistencias dentro del rango de fechas
+    final asistenciasEnRango = asistencias.where((asistencia) {
+      final asistenciaDate = DateTime.parse(asistencia.fecha);
+      return asistenciaDate.isAfter(startDate) &&
+          asistenciaDate.isBefore(endDate);
+    }).toList();
 
     // Obtener todas las fechas únicas y agrupar las asistencias por AlumnoId
-    final fechasUnicas = asistencias.map((e) => e.fecha).toSet().toList()
+    final fechasUnicas = asistenciasEnRango.map((e) => e.fecha).toSet().toList()
       ..sort();
     final asistenciasPorAlumno = <String, Map<String, String>>{};
 
-    for (var asistencia in asistencias) {
+    for (var asistencia in asistenciasEnRango) {
       if (!asistenciasPorAlumno.containsKey(asistencia.alumnoId)) {
         asistenciasPorAlumno[asistencia.alumnoId] = {};
       }
       asistenciasPorAlumno[asistencia.alumnoId]![asistencia.fecha] =
-          asistencia.presente.toString();
+          asistencia.presente == 1 ? 'Presente' : 'Ausente';
     }
 
     // Dividir fechas en grupos de 5
@@ -56,90 +47,181 @@ class SimplePdfApi {
           i, i + 5 > fechasUnicas.length ? fechasUnicas.length : i + 5));
     }
 
-    for (var grupoFechas in gruposDeFechas) {
-      final headers = ['Numero de control', ...grupoFechas];
-      final data = asistenciasPorAlumno.entries.map((entry) {
-        final alumnoId = entry.key;
-        final asistencias = entry.value;
-        return [
-          alumnoId,
-          ...grupoFechas.map((fecha) => asistencias[fecha] ?? '0')
-        ];
-      }).toList();
+    // Building the PDF
+    pdf.addPage(pw.Page(
+      build: (_) => pw.Container(
+        padding: const pw.EdgeInsets.all(5),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Container(
+                  width: 100, // Set the width and height as needed
+                  height: 100,
+                  child: pw.Image(
+                    pw.MemoryImage(imageData1),
+                    fit: pw.BoxFit.contain,
+                  ),
+                ),
+                pw.Container(
+                  width: 100, // Set the width and height as needed
+                  height: 100,
+                  child: pw.Image(
+                    pw.MemoryImage(imageData3),
+                    fit: pw.BoxFit.contain,
+                  ),
+                ),
+                pw.Container(
+                  width: 100, // Set the width and height as needed
+                  height: 100,
+                  child: pw.Image(
+                    pw.MemoryImage(imageData2),
+                    fit: pw.BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Center(
+                child: pw.Text('Instituto Tecnologico de Delicias',
+                    style: pw.TextStyle(
+                        fontSize: 20, fontWeight: pw.FontWeight.bold))),
+            pw.SizedBox(height: 10),
+            pw.Center(
+                child: pw.Text('LISTA DE ASISTENCIA',
+                    style: pw.TextStyle(
+                        fontSize: 16, fontWeight: pw.FontWeight.bold))),
+            pw.SizedBox(height: 20),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Materia:',
+                        style: const pw.TextStyle(fontSize: 12)),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(8),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(width: 1, color: PdfColors.black),
+                      ),
+                      child: pw.Text('${materia.Id_Materia}',
+                          style: const pw.TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Grupo:', style: const pw.TextStyle(fontSize: 12)),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(8),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(width: 1, color: PdfColors.black),
+                      ),
+                      child: pw.Text('${materia.NombreGrupo}',
+                          style: const pw.TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Hora:', style: const pw.TextStyle(fontSize: 12)),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(8),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(width: 1, color: PdfColors.black),
+                      ),
+                      child: pw.Text(materia.Hora,
+                          style: const pw.TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Aula:', style: const pw.TextStyle(fontSize: 12)),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(8),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(width: 1, color: PdfColors.black),
+                      ),
+                      child: pw.Text(materia.Aula,
+                          style: const pw.TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Fecha:', style: const pw.TextStyle(fontSize: 12)),
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(8),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(width: 1, color: PdfColors.black),
+                      ),
+                      child: pw.Row(
+                        children: [
+                          pw.Text(
+                            DateFormat('dd/MM/yyyy')
+                                .format(DateTime.parse(fecha)),
+                            style: const pw.TextStyle(fontSize: 12),
+                          ),
+                          pw.Text(' - ',
+                              style: const pw.TextStyle(fontSize: 12)),
+                          pw.Text(
+                            DateFormat('dd/MM/yyyy').format(
+                                DateTime.parse(fecha).add(Duration(days: 5))),
+                            style: const pw.TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
 
-      pdf.addPage(
-        pw.Page(
-          build: (context) => pw.Table.fromTextArray(
-            data: data,
-            headers: headers,
-            cellAlignment: pw.Alignment.center,
-            tableWidth: pw.TableWidth.max,
-            border: pw.TableBorder.all(width: 1),
-            headerStyle:
-                pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-            cellStyle: pw.TextStyle(fontSize: 10),
-          ),
+            pw.SizedBox(height: 20),
+            // Table of Attendance
+            pw.Table.fromTextArray(
+              data: [
+                [
+                  'Numero de control',
+                  ...fechasUnicas.map((fecha) =>
+                      DateFormat('yyyy-MM-dd').format(DateTime.parse(fecha)))
+                ],
+                ...asistenciasPorAlumno.entries.map((entry) {
+                  final alumnoId = entry.key;
+                  final asistencias = entry.value;
+                  return [
+                    alumnoId,
+                    ...fechasUnicas.map((fecha) => asistencias[fecha] ?? '0')
+                  ];
+                }).toList(),
+              ],
+              cellAlignment: pw.Alignment.center,
+              tableWidth: pw.TableWidth.max,
+              border: pw.TableBorder.all(width: 1),
+              headerStyle: pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
+              cellStyle: pw.TextStyle(fontSize: 10),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    ));
 
     return SaveAndOpenDocument.savePdf(name: 'reporte.pdf', pdf: pdf);
   }
 
-  static Future<File> generateSimpleTextMaestrosPdf(
-      Profesor maestro, List<AsistenciaMaestro> asistencias) async {
-    final pdf = pw.Document();
-
-    // Agrupar las asistencias por fecha
-    final asistenciasPorFecha = groupBy(
-      asistencias,
-      (asistencia) =>
-          DateFormat('yyyy-MM-dd').format(DateTime.parse(asistencia.fechaHora)),
-    );
-
-    // Recorrer las asistencias por fecha
-    asistenciasPorFecha.forEach((fecha, asistenciasDelDia) {
-      final List<List<String>> data = [
-        ['Hora', 'Entro', 'Aula']
-      ];
-
-      asistenciasDelDia.forEach((asistencia) {
-        data.add([
-          DateFormat('HH:mm').format(DateTime.parse(asistencia.fechaHora)),
-          asistencia.entro.toString(),
-          asistencia.aula
-        ]);
-      });
-
-      pdf.addPage(pw.Page(
-        build: (_) => pw.Container(
-          decoration: pw.BoxDecoration(
-            border: pw.Border.all(width: 2, color: PdfColors.black),
-            borderRadius: pw.BorderRadius.circular(0),
-            color: PdfColors.white,
-          ),
-          padding: const pw.EdgeInsets.all(20),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.SizedBox(height: 20),
-              pw.Text('Fecha: $fecha', style: const pw.TextStyle(fontSize: 24)),
-              pw.SizedBox(height: 20),
-              pw.Table.fromTextArray(
-                data: data,
-                cellAlignment: pw.Alignment.center,
-                tableWidth: pw.TableWidth.max,
-                border: pw.TableBorder.all(width: 1),
-                headerStyle:
-                    pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-                cellStyle: pw.TextStyle(fontSize: 10),
-              ),
-            ],
-          ),
-        ),
-      ));
-    });
-
-    return SaveAndOpenDocument.savePdf(name: 'reporte.pdf', pdf: pdf);
+  static Future<Uint8List> loadAsset(String path) async {
+    final ByteData data = await rootBundle.load(path);
+    return data.buffer.asUint8List();
   }
 }

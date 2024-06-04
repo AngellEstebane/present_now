@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:present_now/admin/inicio_administrador.dart';
+import 'package:present_now/admin/simple_pdf_api_admin.dart';
 import 'package:present_now/inicio_maestros.dart';
 import 'package:present_now/iniciomaestros/save_and_open_pdf.dart';
-import 'package:present_now/iniciomaestros/simple_pdf_api.dart';
 
 class Profesor {
   final String rfc;
@@ -63,7 +64,7 @@ class ReportesScreenMaestros extends StatefulWidget {
 
 class _ReportesScreenMaestrosState extends State<ReportesScreenMaestros> {
   List<Profesor> _maestros = [];
-  List<AsistenciaMaestro> _asistencias = [];
+  final List<AsistenciaMaestro> _asistencias = [];
   List<Profesor> _filteredMaestros = [];
   TextEditingController _searchController = TextEditingController();
   int? _selectedDeptId;
@@ -106,26 +107,31 @@ class _ReportesScreenMaestrosState extends State<ReportesScreenMaestros> {
     }
   }
 
-  Future<void> _fetchAsistenciaMaestros(Profesor profesor) async {
-    final response = await http.get(
-        Uri.parse('https://proyecto-agiles.onrender.com/entrada/profesor'));
+  Future<void> _fetchAsistenciaMaestros(Profesor profesor, String fecha) async {
+    final response = await http.get(Uri.parse(
+        'https://proyecto-agiles.onrender.com/entrada/profesorfecha?fecha=$fecha'));
 
     if (response.statusCode == 200) {
-      final jsonBody = json.decode(response.body);
-
-      // Filtrar las asistencias por el RFC del profesor
-      final List<AsistenciaMaestro> asistencias = (jsonBody as List)
-          .where((maestroJson) => maestroJson['RFC'] == profesor.rfc)
-          .map((maestroJson) => AsistenciaMaestro.fromJson(maestroJson))
-          .toList();
+      final List<dynamic> jsonResponse = json.decode(response.body);
 
       setState(() {
-        _asistencias = asistencias;
+        _asistencias.clear();
       });
 
-      // Generate PDF with the fetched data
-      final simplePdfFile = await SimplePdfApi.generateSimpleTextMaestrosPdf(
-          profesor, asistencias);
+      // Filtrar las asistencias para obtener solo las del profesor seleccionado
+      final List<AsistenciaMaestro> asistenciasDelProfesor = jsonResponse
+          .where((asistencia) => asistencia['ProfesorRFC'] == profesor.rfc)
+          .map((asistenciaJson) => AsistenciaMaestro.fromJson(asistenciaJson))
+          .toList();
+
+      // Agregar las asistencias filtradas a la lista _asistencias
+      setState(() {
+        _asistencias.addAll(asistenciasDelProfesor);
+      });
+
+      // Generar y abrir el PDF con los datos obtenidos
+      final simplePdfFile = await SimplePdfApiMaestros.generateSimpleTextPdf(
+          profesor, _asistencias, fecha);
       SaveAndOpenDocument.openPdf(simplePdfFile);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -269,7 +275,18 @@ class _ReportesScreenMaestrosState extends State<ReportesScreenMaestros> {
                       ),
                       onTap: () async {
                         // Handle on click here
-                        await _fetchAsistenciaMaestros(maestro);
+                        final selectedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2025),
+                        );
+                        if (selectedDate != null) {
+                          final formattedDate =
+                              DateFormat('yyyy-MM-dd').format(selectedDate);
+                          await _fetchAsistenciaMaestros(
+                              maestro, formattedDate);
+                        }
                       },
                     ),
                   );

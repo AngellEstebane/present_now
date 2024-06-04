@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:present_now/inicio_maestros.dart';
 import 'package:present_now/iniciomaestros/save_and_open_pdf.dart';
 import 'package:present_now/iniciomaestros/simple_pdf_api.dart';
@@ -105,7 +106,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
     }
   }
 
-  Future<void> _fetchAsist(Subject subject) async {
+  Future<void> _fetchAsist(Subject subject, String fecha) async {
     final response = await http.get(Uri.parse(
         'https://proyecto-agiles.onrender.com/asistencias/materia?materiaID=${subject.Id_Materia}'));
 
@@ -120,7 +121,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
 
       // Generate PDF with the fetched data
       final simplePdfFile = await SimplePdfApi.generateSimpleTextPdf(
-          subject, subject.Id_Materia, _asistencias);
+          subject, subject.Id_Materia, _asistencias, fecha);
       SaveAndOpenDocument.openPdf(simplePdfFile);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -144,7 +145,17 @@ class _ReportesScreenState extends State<ReportesScreen> {
             title: Text('Materia: ${subject.Id_Materia}'),
             subtitle: Text('grupo: ${subject.NombreGrupo}'),
             onTap: () async {
-              await _fetchAsist(subject);
+              final selectedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2025),
+              );
+              if (selectedDate != null) {
+                final formattedDate =
+                    DateFormat('yyyy-MM-dd').format(selectedDate);
+                await _fetchAsist(subject, formattedDate);
+              }
             },
           );
         },
