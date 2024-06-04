@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';  // Asegúrate de agregar el paquete intl a tu pubspec.yaml
 import 'package:present_now/iniciomaestros/models/asistencia_alumno_model.dart'; // Asegúrate de tener la ruta correcta
 
 class ListAsistenciaAlumnos extends StatefulWidget {
@@ -175,10 +176,12 @@ class _ListAsistenciaAlumnosState extends State<ListAsistenciaAlumnos> {
                     itemCount: filteredAsistencias?.length ?? 0,
                     itemBuilder: (context, index) {
                       final asistencia = filteredAsistencias![index];
+                      String fecha = asistencia.fecha != null ? DateFormat('yyyy-MM-dd').format(asistencia.fecha!) : 'N/A';
+                      String hora = asistencia.fecha != null ? DateFormat('HH:mm:ss').format(asistencia.fecha!) : 'N/A';
                       return ListTile(
                         title: Text('Alumno ID: ${asistencia.alumnoId}'),
                         subtitle: Text(
-                            'Fecha: ${asistencia.fecha?.toIso8601String() ?? 'N/A'}\nPresente: ${asistencia.presente == 1 ? 'Sí' : 'No'}'),
+                            'Fecha: $fecha\nHora: $hora\nPresente: ${asistencia.presente == 1 ? 'Sí' : 'No'}'),
                       );
                     },
                   ),
