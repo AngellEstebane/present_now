@@ -212,14 +212,15 @@ class _ReportesScreenMaestrosState extends State<ReportesScreenMaestros> {
                     style: TextStyle(color: Color.fromARGB(255, 57, 42, 222)),
                   ),
                   isExpanded: true,
-                  dropdownColor: Color.fromARGB(255,24,81,180),
+                  dropdownColor: Color.fromARGB(255, 24, 81, 180),
                   iconEnabledColor: Color.fromARGB(255, 71, 22, 169),
                   style: TextStyle(color: Colors.white),
                   items: [
                     DropdownMenuItem(
                       value: -1,
                       child: Text('Todos los Departamentos',
-                          style: TextStyle(color: Color.fromARGB(255, 500, 224, 224))),
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 500, 224, 224))),
                     ),
                     DropdownMenuItem(
                       value: 1,

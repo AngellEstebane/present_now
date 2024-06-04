@@ -130,7 +130,7 @@ class _AsistenciaEntradaSalidaState extends State<AsistenciaEntradaSalida> {
         title: const Text('Asistencia Entrada y Salida'),
       ),
       body: FutureBuilder(
-        future: authProvider.cargarMateriasProfesor(),
+        future: authProvider.cargarMateriasAlumno(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());

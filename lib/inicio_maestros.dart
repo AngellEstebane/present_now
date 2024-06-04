@@ -1,11 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:present_now/iniciomaestros/asistencia_entrada_salida.dart';
-import 'package:present_now/iniciomaestros/asistencia_screen.dart';
+import 'package:present_now/iniciomaestros/list_asistencia_alumnos.dart';
 import 'package:present_now/iniciomaestros/reportes_screen.dart';
 import 'package:present_now/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-
 import 'iniciomaestros/busqueda_screen.dart';
 import 'iniciomaestros/justificantes_screen.dart';
 
@@ -116,6 +115,17 @@ class _InicioMaestrosState extends State<InicioMaestros>
                   MaterialPageRoute(
                       builder: (context) =>
                           ReportesScreen(rfc: authProvider.rfc ?? '')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_pin_sharp),
+              title: const Text('Lista asistencias'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ListAsistenciaAlumnos()),
                 );
               },
             ),
