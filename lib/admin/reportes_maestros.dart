@@ -130,9 +130,15 @@ class _ReportesScreenMaestrosState extends State<ReportesScreenMaestros> {
       });
 
       // Generar y abrir el PDF con los datos obtenidos
-      final simplePdfFile = await SimplePdfApiMaestros.generateSimpleTextPdf(
-          profesor, _asistencias, fecha);
-      SaveAndOpenDocument.openPdf(simplePdfFile);
+      if (_asistencias.isNotEmpty) {
+        final simplePdfFile = await SimplePdfApiMaestros.generateSimpleTextPdf(
+            profesor, _asistencias, fecha);
+        SaveAndOpenDocument.openPdf(simplePdfFile);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No hay registro en esta fecha')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al cargar las asistencias')),
